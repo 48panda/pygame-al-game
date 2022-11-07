@@ -5,6 +5,7 @@ class Sprite(pygame.sprite.Sprite):
   hover = False
   width = 50
   height = 50
+  bottomLeftAligned = False
   def __init__(self, *args, **kwargs):
     super().__init__()
     self.im = pygame.Surface([self.width, self.height])
@@ -14,7 +15,10 @@ class Sprite(pygame.sprite.Sprite):
   def update(self, *args, **kwargs):
     self.onupdate(*args, **kwargs)
     self.rect = self.im.get_rect()
-    self.rect.center = self.pos
+    if self.bottomLeftAligned:
+      self.rect.bottomleft = self.pos
+    else:
+      self.rect.center = self.pos
     if self.hover:
       if self.rect.collidepoint(pygame.mouse.get_pos()):
         self.image = self.hoverim
