@@ -4,6 +4,11 @@ import math
 
 PLAYER = pygame.image.load("assets/player/template.png")
 
+class placeholderSprite(pygame.sprite.Sprite):
+  def __init__(self, rect):
+    super().__init__()
+    self.rect = rect
+
 class Player(karas.sprite.Sprite):
   bottomLeftAligned = True
   def init(self, world):
@@ -12,24 +17,67 @@ class Player(karas.sprite.Sprite):
     self.x = 0
     self.y = 40
     self.im = PLAYER
+    size = self.im.get_size()
+    self.im = pygame.transform.scale(self.im, (size[0]*2, size[1]*2))
     self.vx = 0
     self.vy = 0
+    self.jump = 0
+  #def getDirection(self, c, block):
+  #  changex = c[0] - self.rect.center[0]
+  #  changey = c[1] - self.rect.center[1]
+  #  if changey == 0:
+  #    if changex > 0:
+  #      return "+x"
+  #    return "-x"
+  #  if changex == 0:
+  #    if changey > 0:
+  #      return "+y"
+  #    return "-y"
+  #  if changex > 0:
+  #    if changey > 0:
+
+
+
 
   def onupdate(self):
-    self.y += self.vy
-    if self.world.level[int(self.y)][int(self.x)] == 0:
-      self.vy += 0.1
-    if self.world.level[int(self.y)][int(self.x)] != 0 and self.vy > 0:
+    if self.jump > 0:
+      self.vy -= 0.7
+      self.jump -=1
+    new = self.rect
+    self.vy += 0.1
+    new.bottomleft = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly
+    c = new.centerx
+    new.width = 26
+    new.centerx = c
+    new.left = (self.x + self.vx) * 16 - self.world.scrollx + 7
+    #new.left = max(new.left, 7)
+    if len(new.collidelistall(self.world.rects)) != 0:
+      for coll in new.collidelistall(self.world.rects):
+        block = self.world.rects[coll]
+        if self.vx > 0:
+          new.right = min(new.right, block.left)
+        elif self.vx < 0:
+          new.left = max(new.left, block.right)
+      self.vx = 0
+    new.bottom = (self.y + self.vy) * 16 - self.world.scrolly
+    if len(new.collidelistall(self.world.rects)) != 0:
+      for coll in new.collidelistall(self.world.rects):
+        block = self.world.rects[coll]
+        if self.vy > 0:
+          new.bottom = min(new.bottom, block.top)
+        else:
+          new.top = max(new.top, block.bottom)
       self.vy = 0
-      self.y = int(self.y)
-    self.x += self.vx
-    if self.world.level[math.ceil(self.y)-1][int(self.x)+1] != 0 and self.vx > 0:
-      self.vx = 0
-      self.x = int(self.x)
-    if self.world.level[math.ceil(self.y)-1][math.ceil(self.x)-1] != 0 and self.vx < 0:
-      self.vx = 0
-      self.x = math.ceil(self.x)
+
+    d = new.center
+    new.width = 40
+    new.center = d
+    self.x = (new.left + self.world.scrollx) / 16
+    self.y = (new.bottom + self.world.scrolly) / 16
+    
+    
     self.vx *= 0.7
-    self.vy *= 0.7
+    self.vy *= 0.9
     self.x = min(len(self.world.level[0]) - 1, max(0, self.x))
+    self.world.update(self)
     self.pos = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly

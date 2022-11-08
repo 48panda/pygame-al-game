@@ -13,6 +13,11 @@ class Sprite(pygame.sprite.Sprite):
     self.pos = 0, 0
     self.init(*args, **kwargs)
   def update(self, *args, **kwargs):
+    self.rect = self.im.get_rect()
+    if self.bottomLeftAligned:
+      self.rect.bottomleft = self.pos
+    else:
+      self.rect.center = self.pos
     self.onupdate(*args, **kwargs)
     self.rect = self.im.get_rect()
     if self.bottomLeftAligned:

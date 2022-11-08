@@ -9,7 +9,7 @@ def run():
   #buttons = karas.sprite.Group(karas.sprite.TransparentButton)
   #buttons.createNew("hello!", pos=(200, 200))
   
-  world = engine.world.World(game)
+  world = engine.world.World(game, 0)
   x = 0
 
   player = engine.player.Player(world) 
@@ -32,11 +32,11 @@ def run():
     
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_a]:
-      player.vx -= 0.1
+      player.vx -= 0.15
     if pressed[pygame.K_d]:
-      player.vx += 0.1
+      player.vx += 0.15
     if pressed[pygame.K_w] and player.vy == 0:
-      player.vy -= 0.8
+      player.jump = 2
     #buttons.draw(game.game)
     game.events()
     game.render()
