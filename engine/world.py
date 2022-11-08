@@ -32,7 +32,7 @@ class World:
   def get_surface_level(self, x, surface):
     height = self.surfacelevel
     for wave in surface:
-      height += round(wave[1] * math.sin(math.pi*x/wave[0]))
+      height += round(wave[1] * math.sin(x/wave[0]))
     return height
   
   def to_png(self):
@@ -58,10 +58,19 @@ class World:
         if tile == 0:
           continue
         if tile == 1:
-          if y==0 or self.level[y-1 + tile_y][x + tile_x]:
+          if y==0 or self.level[y-1 + tile_y][x + tile_x] != 0:
             todraw = engine.tiles.DIRT
           else:
-            todraw = engine.tiles.GRASS
+            if x==0 or self.level[y + tile_y][x + tile_x-1] != 0:
+              if x==len(self.level[y+tile_y]) or self.level[y + tile_y][x + tile_x+1] != 0:
+                todraw = engine.tiles.GRASS
+              else:
+                todraw = engine.tiles.GRASS_r
+            else:
+              if x==len(self.level[y+tile_y]) or self.level[y + tile_y][x + tile_x+1] != 0:
+                todraw = engine.tiles.GRASS_l
+              else:
+                todraw = engine.tiles.GRASS_b
         else:
           continue
         self.rects.append(pygame.Rect(x*16+offset_x, y*16+offset_y, 16, 16))
