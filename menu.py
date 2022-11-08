@@ -33,8 +33,10 @@ def run():
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_a]:
       player.vx -= 0.15
+      player.flipped = False
     if pressed[pygame.K_d]:
       player.vx += 0.15
+      player.flipped = True
     if pressed[pygame.K_w] and player.vy == 0:
       player.jump = 2
     #buttons.draw(game.game)

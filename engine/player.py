@@ -11,17 +11,22 @@ class placeholderSprite(pygame.sprite.Sprite):
 
 class Player(karas.sprite.Sprite):
   bottomLeftAligned = True
+  spritesheet = True
+  spritewidth = 40
+  spriteheight = 56
+  num_sprites = 3
   def init(self, world):
     
     self.world = world
     self.x = 0
     self.y = 40
-    self.im = PLAYER
-    size = self.im.get_size()
-    self.im = pygame.transform.scale(self.im, (size[0]*2, size[1]*2))
+   
+    self.fromSpriteSheet(pygame.transform.scale(PLAYER, (PLAYER.get_size()[0]*2, PLAYER.get_size()[1]*2)))
     self.vx = 0
     self.vy = 0
     self.jump = 0
+    self.flipped = True
+    self.walktimer = 0
   #def getDirection(self, c, block):
   #  changex = c[0] - self.rect.center[0]
   #  changey = c[1] - self.rect.center[1]
@@ -78,6 +83,16 @@ class Player(karas.sprite.Sprite):
     
     self.vx *= 0.7
     self.vy *= 0.9
+    if abs(self.vx) < 0.01:
+      self.vx = 0
     self.x = min(len(self.world.level[0]) - 1, max(0, self.x))
     self.world.update(self)
     self.pos = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly
+    if self.vx == 0:
+      self.setSprite(0, self.flipped)
+    if self.vx != 0:
+      if self.walktimer < 5:
+        self.setSprite(1, self.flipped)
+      else:
+        self.setSprite(2, self.flipped)
+      self.walktimer = (self.walktimer + 1) %10

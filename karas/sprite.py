@@ -6,12 +6,33 @@ class Sprite(pygame.sprite.Sprite):
   width = 50
   height = 50
   bottomLeftAligned = False
+  spritesheet = False
+  spritewidth = 0
+  spriteheight = 0
+  num_sprites = 0
   def __init__(self, *args, **kwargs):
     super().__init__()
     self.im = pygame.Surface([self.width, self.height])
     self.hoverim = pygame.Surface([self.width, self.height])
     self.pos = 0, 0
     self.init(*args, **kwargs)
+  
+  def fromSpriteSheet(self, sheet):
+    sprites = []
+    for i in range(self.num_sprites):
+      sprite = pygame.Surface((self.spritewidth, self.spriteheight), pygame.SRCALPHA)
+      sprite.blit(sheet, (0,0), area=(i*self.spritewidth, 0, self.spritewidth, self.spriteheight))
+      sprites.append(sprite)
+    self.sprites = sprites
+    self.flippedsprites = [pygame.transform.flip(i, True, False) for i in sprites]
+
+  def setSprite(self, num, flipped = False):
+    if not flipped:
+      self.im = self.sprites[num]
+    else:
+      self.im = self.flippedsprites[num]
+
+  
   def update(self, *args, **kwargs):
     self.rect = self.im.get_rect()
     if self.bottomLeftAligned:
