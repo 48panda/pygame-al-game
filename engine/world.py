@@ -80,4 +80,3 @@ class World:
     self.scrollx = -960 + int(player.x * 16)
     self.scrollx = max(0, self.scrollx)
     self.scrollx = min((len(self.level[0]) - 1) * 16 - 1920, self.scrollx)
-    #self.scrolly = 0 - player.y
