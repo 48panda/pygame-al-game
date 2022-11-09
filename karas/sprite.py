@@ -31,6 +31,8 @@ class Sprite(pygame.sprite.Sprite):
       self.im = self.sprites[num]
     else:
       self.im = self.flippedsprites[num]
+  def postupdate(self):
+    pass
 
   
   def update(self, *args, **kwargs):
@@ -52,7 +54,7 @@ class Sprite(pygame.sprite.Sprite):
         self.image = self.im
     else:
       self.image = self.im
-  
+    self.postupdate()
   def onupdate(self):
     pass
 

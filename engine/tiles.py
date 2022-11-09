@@ -33,3 +33,6 @@ GRASS_b.blit(pygame.transform.rotate(grassdark, 270), (0,0))
 GRASS_b.blit(grass, (0,0))
 GRASS_b.blit(pygame.transform.rotate(grass, 90), (0,0))
 GRASS_b.blit(pygame.transform.rotate(grass, 270), (0,0))
+
+BLUE = pygame.Surface((16,16))
+BLUE.fill((0,0,255))
