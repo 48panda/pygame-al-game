@@ -85,7 +85,7 @@ class Player(karas.sprite.Sprite):
     self.vy *= 0.9
     if abs(self.vx) < 0.01:
       self.vx = 0
-    self.x = min(len(self.world.level[0]) - 1, max(0, self.x))
+    self.x = min(len(self.world.level[0]) - 1 - (self.spritewidth / 16), max(0, self.x))
     self.world.update(self)
     self.pos = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly
     if self.vx == 0:

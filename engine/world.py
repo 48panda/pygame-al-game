@@ -6,11 +6,11 @@ import pygame
 
 class World:
   def __init__(self, game, seed):
-    self.level = None
+    self.level = np.array([])
     self.game = game
     self.scrollx = 0
     self.scrolly = 0
-    self.width = 500
+    self.width = 200
     self.height = 80
     self.surfacelevel = 40
     self.seed = seed
@@ -51,7 +51,7 @@ class World:
     for x in range(121):
       if x + tile_x < 0:
         continue
-      if x + tile_x >= len(self.level[0]):
+      if x + tile_x + 1 >= self.width:
         continue
       for y in range(68):
         tile = self.level[y + tile_y][x + tile_x]
@@ -79,5 +79,5 @@ class World:
   def update(self, player):
     self.scrollx = -960 + int(player.x * 16)
     self.scrollx = max(0, self.scrollx)
-    self.scrollx = min(len(self.level[0]) * 16 - 1920, self.scrollx)
+    self.scrollx = min((len(self.level[0]) - 1) * 16 - 1920, self.scrollx)
     #self.scrolly = 0 - player.y
