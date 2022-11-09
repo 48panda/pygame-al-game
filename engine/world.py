@@ -48,6 +48,8 @@ class World:
     tile_y = self.scrolly//16
     offset_x = -(self.scrollx%16)
     offset_y = -(self.scrolly%16)
+    mouseScaledDown = self.game.unzoompoint(*pygame.mouse.get_pos())
+    print(pygame.mouse.get_pos(), mouseScaledDown, self.game.zoomamount, self.game.actualzoom)
     for x in range(121):
       if x + tile_x < 0:
         continue
@@ -55,9 +57,10 @@ class World:
         continue
       for y in range(68):
         tile = self.level[y + tile_y][x + tile_x]
+        rect = pygame.Rect(x*16+offset_x, y*16+offset_y, 16, 16)
         if tile == 0:
           continue
-        if tile == 1:
+        elif tile == 1:
           if y==0 or self.level[y-1 + tile_y][x + tile_x] != 0:
             todraw = engine.tiles.DIRT
           else:
@@ -73,8 +76,8 @@ class World:
                 todraw = engine.tiles.GRASS_b
         else:
           continue
-        self.rects.append(pygame.Rect(x*16+offset_x, y*16+offset_y, 16, 16))
-        self.game.game.blit(todraw, (x*16+offset_x, y*16+offset_y))
+        self.rects.append(rect)
+        self.game.zoom.blit(todraw, (x*16+offset_x, y*16+offset_y))
   
   def update(self, player):
     self.scrollx = -960 + int(player.x * 16)

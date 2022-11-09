@@ -28,7 +28,7 @@ def run():
     players.update()
 
     world.render()
-    players.draw(game.game)
+    players.draw(game.zoom)
     
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_a]:

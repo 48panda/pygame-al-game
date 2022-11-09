@@ -96,3 +96,5 @@ class Player(karas.sprite.Sprite):
       else:
         self.setSprite(2, self.flipped)
       self.walktimer = (self.walktimer + 1) %10
+  def postupdate(self):
+    self.world.game.zoompos = self.rect.center
