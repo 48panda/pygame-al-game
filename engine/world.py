@@ -97,9 +97,10 @@ class World:
         clickx = int((blockx - offset_x) // 16 + tile_x)
         clicky = int((blocky - offset_y) // 16 + tile_y)
         if self.player.inventory.get_selected() in engine.items.PICKAXES:
-          print(clickx, clicky)
           self.level[clicky][clickx] = 0
+          return True
         if self.player.inventory.get_selected() == engine.items.DIRT:
           self.level[clicky][clickx] = 1
+          return True
         
 

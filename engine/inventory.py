@@ -35,7 +35,38 @@ class Inventory:
       self.hotbar_sprites[i].setSprite(self.items[i])
     self.hotbar_group.update()
   def event(self, event):
-    if event.type == pygame.MOUSEBUTTONDOWN:
+    if event.type == pygame.KEYDOWN:
+      if event.key == pygame.K_1:
+        self.selected = 0
+        return True
+      if event.key == pygame.K_2:
+        self.selected = 1
+        return True
+      if event.key == pygame.K_3:
+        self.selected = 2
+        return True
+      if event.key == pygame.K_4:
+        self.selected = 3
+        return True
+      if event.key == pygame.K_5:
+        self.selected = 4
+        return True
+      if event.key == pygame.K_6:
+        self.selected = 5
+        return True
+      if event.key == pygame.K_7:
+        self.selected = 6
+        return True
+      if event.key == pygame.K_8:
+        self.selected = 7
+        return True
+      if event.key == pygame.K_9:
+        self.selected = 8
+        return True
+      if event.key == pygame.K_0:
+        self.selected = 9
+        return True
+    elif event.type == pygame.MOUSEBUTTONDOWN:
       if event.button == 1:
         for i, r in enumerate(SLOT_RECTS):
           if r.collidepoint(event.pos):
