@@ -20,7 +20,6 @@ class Game:
     self.zoompos = (1920//2, 1080//2)
     self.zoomamount = 1
     self.actualzoom = (0,0)
-    print("START")
 
   def triggerevent(self, event, *args, **kwargs):
     if not event in self.keybinds:
@@ -82,7 +81,7 @@ class Game:
       area.right = 1920*self.zoomamount
     self.actualzoom = area.topleft
     self.game.blit(zoomed, (0,0), area=area)
-    #self.game.blit(self.nozoom, (0,0))
+    self.game.blit(self.nozoom, (0,0))
     pygame.display.update()
   
   def unzoompoint(self, x, y):

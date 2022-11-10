@@ -13,6 +13,7 @@ def run():
   x = 0
 
   player = engine.player.Player(world) 
+  world.assign_player(player)
   players = pygame.sprite.Group()
   players.add(player)
 
@@ -29,6 +30,7 @@ def run():
 
     world.render()
     players.draw(game.zoom)
+    player.render()
     
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_a]:
@@ -40,6 +42,8 @@ def run():
     if pressed[pygame.K_w] and player.vy == 0:
       player.jump = 2
     #buttons.draw(game.game)
-    game.events()
+    for event in game.get_events():
+      if player.event(event): continue
+      if world.event(event): continue
     game.render()
     clock.tick(30)
