@@ -14,7 +14,7 @@ class Character(karas.sprite.Sprite):
   spritesheet = True
   spritewidth = 40
   spriteheight = 56
-  num_sprites = 3
+  num_sprites = 4
   def __init__(self, world, *args, **kwargs):
     self.world = world
     super().__init__(*args, **kwargs)
@@ -30,11 +30,8 @@ class Character(karas.sprite.Sprite):
 
   def update(self, *args, **kwargs):
     super().update(*args, **kwargs)
-    if self.jump > 0:
-      self.vy -= 0.7
-      self.jump -=1
     new = self.rect
-    self.vy += 0.1
+    self.vy += 0.15
     new.bottomleft = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly
     c = new.centerx
     new.width = 26
@@ -73,9 +70,11 @@ class Character(karas.sprite.Sprite):
     self.x = min(len(self.world.level[0]) - 1 - (self.spritewidth / 16), max(0, self.x))
     self.world.update(self)
     self.pos = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly
-    if self.vx == 0:
+    if self.vy != 0:
+      self.setSprite(3, self.flipped)
+    elif self.vx == 0:
       self.setSprite(0, self.flipped)
-    if self.vx != 0:
+    elif self.vx != 0:
       if self.walktimer < 5:
         self.setSprite(1, self.flipped)
       else:

@@ -18,6 +18,8 @@ class Inventory:
     self.hotbar_sprites = [engine.items.Item(SLOT_POSITIONS_CENTER[i]) for i in range(10)]
     self.hotbar_group = pygame.sprite.Group(self.hotbar_sprites)
     self.selected = 0
+    self.player_sprite = engine.items.Item(self.player.rect.center)
+    self.player_sprite_group = pygame.sprite.GroupSingle(self.player_sprite)
     for i in self.hotbar_sprites:
       i.setSprite(0)
       i.update()
@@ -72,5 +74,6 @@ class Inventory:
           if r.collidepoint(event.pos):
             self.selected = i
             return True
+    return False
   def get_selected(self):
     return self.items[self.selected]
