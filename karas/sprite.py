@@ -11,11 +11,15 @@ class Sprite(pygame.sprite.Sprite):
   spriteheight = 0
   num_sprites = 0
   def __init__(self, *args, **kwargs):
+    self.rect = pygame.Rect(0,0,0,0)
     super().__init__()
     self.im = pygame.Surface([self.width, self.height])
     self.hoverim = pygame.Surface([self.width, self.height])
     self.pos = 0, 0
     self.init(*args, **kwargs)
+    if self.spritesheet:
+      self.flipped = False
+    self.spritenum = 0
   
   def fromSpriteSheet(self, sheet):
     sprites = []
@@ -27,13 +31,15 @@ class Sprite(pygame.sprite.Sprite):
     self.flippedsprites = [pygame.transform.flip(i, True, False) for i in sprites]
 
   def setSprite(self, num, flipped = False):
+    self.spritenum = num
     if not flipped:
       self.im = self.sprites[num]
     else:
       self.im = self.flippedsprites[num]
   def postupdate(self):
     pass
-
+  def init(self):
+    pass
   
   def update(self, *args, **kwargs):
     self.rect = self.im.get_rect()

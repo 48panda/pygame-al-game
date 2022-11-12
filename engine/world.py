@@ -41,6 +41,9 @@ class World:
     im = Image.fromarray(np.uint8(cm.gist_earth(self.level)*255))
     pygame.quit()
     im.show()
+  
+  def assign_player(self, player):
+    self.player = player
 
   def render(self):
     self.rects = []
@@ -49,7 +52,6 @@ class World:
     offset_x = -(self.scrollx%16)
     offset_y = -(self.scrolly%16)
     mouseScaledDown = self.game.unzoompoint(*pygame.mouse.get_pos())
-    print(pygame.mouse.get_pos(), mouseScaledDown, self.game.zoomamount, self.game.actualzoom)
     for x in range(121):
       if x + tile_x < 0:
         continue
@@ -83,3 +85,22 @@ class World:
     self.scrollx = -960 + int(player.x * 16)
     self.scrollx = max(0, self.scrollx)
     self.scrollx = min((len(self.level[0]) - 1) * 16 - 1920, self.scrollx)
+  
+  def event(self, event):
+    if event.type == pygame.MOUSEBUTTONDOWN:
+      if event.button == 1:
+        tile_x = self.scrollx//16
+        tile_y = self.scrolly//16
+        offset_x = -(self.scrollx%16)
+        offset_y = -(self.scrolly%16)
+        blockx, blocky = self.game.unzoompoint(*event.pos)
+        clickx = int((blockx - offset_x) // 16 + tile_x)
+        clicky = int((blocky - offset_y) // 16 + tile_y)
+        if self.player.inventory.get_selected() in engine.items.PICKAXES:
+          self.level[clicky][clickx] = 0
+          return True
+        if self.player.inventory.get_selected() == engine.items.DIRT:
+          self.level[clicky][clickx] = 1
+          return True
+        
+
