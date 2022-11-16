@@ -24,4 +24,7 @@ class timedText(karas.sprite.Sprite):
   def reset(self, newText=None):
     if newText:
       self.text = newText
+      full = self.font.render(newText, True, self.color)
+      self.im = pygame.Surface(full.get_rect().size, pygame.SRCALPHA)
     self.elapsed = 0
+    self.char = 0
