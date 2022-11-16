@@ -22,6 +22,9 @@ class Sprite(pygame.sprite.Sprite):
     self.spritenum = 0
   
   def fromSpriteSheet(self, sheet):
+    if not self.spritesheet:
+      self.im = sheet
+      return
     sprites = []
     for i in range(self.num_sprites):
       sprite = pygame.Surface((self.spritewidth, self.spriteheight), pygame.SRCALPHA)
@@ -31,11 +34,12 @@ class Sprite(pygame.sprite.Sprite):
     self.flippedsprites = [pygame.transform.flip(i, True, False) for i in sprites]
 
   def setSprite(self, num, flipped = False):
-    self.spritenum = num
-    if not flipped:
-      self.im = self.sprites[num]
-    else:
-      self.im = self.flippedsprites[num]
+    if self.spritesheet:
+      self.spritenum = num
+      if not flipped:
+        self.im = self.sprites[num]
+      else:
+        self.im = self.flippedsprites[num]
   def postupdate(self):
     pass
   def init(self):

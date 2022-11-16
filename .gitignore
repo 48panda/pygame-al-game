@@ -3,3 +3,5 @@ dist
 *.docx
 *.todo
 build
+*.zip
+v*.*/

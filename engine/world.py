@@ -92,6 +92,9 @@ class World:
     self.player.x = self.landing_site_x + 1
     self.player.y = self.landing_site_y + 2
 
+  def assign_text(self, text):
+    self.text = text
+
   def render(self):
     self.rects = []
     tile_x = self.scrollx//16
@@ -215,5 +218,6 @@ class World:
             return True
         if self.level[clicky][clickx] == engine.blocks.SHIP:
           self.game.keypad.enable()
+
   def travel(self, dest):
-    return
+    self.text.reset(dest)

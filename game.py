@@ -9,12 +9,13 @@ def run():
   #buttons = karas.sprite.Group(karas.sprite.Button)
   #buttons = karas.sprite.Group(karas.sprite.TransparentButton)
   #buttons.createNew("hello!", pos=(200, 200))
-  
+
   world = engine.world.World(game, 4)
   game.assign_world(world)
   x = 0
 
   player = engine.player.Player(world) 
+
   world.assign_player(player)
   players = pygame.sprite.Group()
   players.add(player)
@@ -24,17 +25,19 @@ def run():
   text = barras.timetext.timedText("2172", pygame.font.SysFont("Calibri", 50), (0, 196, 190), (100, 30), 5)
   textGroup = pygame.sprite.GroupSingle(text)
 
+  world.assign_text(text)
+
   while True:
     #buttons.update()
 
     world.update(player)
     players.update()
-    textGroup.update()
+    #textGroup.update()
 
     world.render()
     players.draw(game.zoom)
     player.render()
-    textGroup.draw(game.nozoom)
+    #textGroup.draw(game.nozoom)
     
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_a]:

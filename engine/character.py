@@ -1,8 +1,33 @@
 import pygame
 import karas
 import math
+import PIL
+from PIL import Image
+import numpy as np
 
-CHARACTER = pygame.image.load("assets/player/template.png")
+CHARACTER = Image.open("assets/player/template.png")
+data = np.array(CHARACTER)
+red, green, blue, alpha = data[:,:,0], data[:,:,1], data[:,:,2], data[:,:,3]
+dark = 88
+#Image.fromarray(alpha, mode="L").show()
+#Image.fromarray(alpha>=245, mode="L").show()
+light = 195
+maskdark = (dark - 10 < red) & (red < dark + 10) & (dark - 10 < green) & (green < dark + 10) & (dark - 10 < blue) & (blue < dark + 10) & (alpha > 1)
+masklight = (light - 10 < red) & (red < light + 10) & (light - 10 < green) & (green < light + 10) & (light - 10 < blue) & (blue < light + 10) & (alpha > 1)
+
+def pilImageToSurface(pilImage):
+    return pygame.image.fromstring(
+        pilImage.tobytes(), pilImage.size, pilImage.mode)
+
+def hueSkinColor(color):
+  darker = (color[0]//2, color[1]//2, color[2]//2)#karas.utils.darken_color(*color, factor=0.7)
+  this = np.copy(data)
+  this[:,:,:3][maskdark] = darker
+  this[:,:,:3][masklight] = color
+  return pilImageToSurface(Image.fromarray(this))
+
+def scale2x(im):
+  return pygame.transform.scale(im, (im.get_width() * 2, im.get_height() * 2))
 
 class placeholderSprite(pygame.sprite.Sprite):
   def __init__(self, rect):
@@ -20,8 +45,7 @@ class Character(karas.sprite.Sprite):
     super().__init__(*args, **kwargs)
     self.x = 0
     self.y = 40
-   
-    self.fromSpriteSheet(pygame.transform.scale(CHARACTER, (CHARACTER.get_size()[0]*2, CHARACTER.get_size()[1]*2)))
+    self.fromSpriteSheet(scale2x(hueSkinColor((255, 184, 184))))
     self.vx = 0
     self.vy = 0
     self.jump = 0
@@ -39,13 +63,16 @@ class Character(karas.sprite.Sprite):
     new.left = (self.x + self.vx) * 16 - self.world.scrollx + 7
     #new.left = max(new.left, 7)
     if len(new.collidelistall(self.world.rects)) != 0:
-      for coll in new.collidelistall(self.world.rects):
-        block = self.world.rects[coll]
-        if self.vx > 0:
-          new.right = min(new.right, block.left)
-        elif self.vx < 0:
-          new.left = max(new.left, block.right)
-      self.vx = 0
+      new.bottom -= 16
+      if len(new.collidelistall(self.world.rects)) != 0:
+        new.bottom += 16
+        for coll in new.collidelistall(self.world.rects):
+          block = self.world.rects[coll]
+          if self.vx > 0:
+            new.right = min(new.right, block.left)
+          elif self.vx < 0:
+            new.left = max(new.left, block.right)
+        self.vx = 0
     new.bottom = (self.y + self.vy) * 16 - self.world.scrolly
     if len(new.collidelistall(self.world.rects)) != 0:
       for coll in new.collidelistall(self.world.rects):

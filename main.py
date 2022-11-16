@@ -1,3 +1,7 @@
 import game
+import karas
 
-game.run()
+try:
+  game.run()
+except karas.QuitTriggered:
+  pass

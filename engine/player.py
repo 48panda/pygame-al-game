@@ -14,7 +14,7 @@ class Player(engine.character.Character):
   def event(self, event):
     if self.inventory.event(event): return True
     if event.type == pygame.KEYDOWN:
-      if event.key == pygame.K_w:
+      if event.key in [pygame.K_w, pygame.K_SPACE]:
         if self.vy == 0.0:
           self.vy = -2
     return False
