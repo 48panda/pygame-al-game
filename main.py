@@ -1,3 +1,3 @@
-import menu
+import game
 
-menu.run()
+game.run()

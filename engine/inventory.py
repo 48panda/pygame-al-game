@@ -10,9 +10,11 @@ SLOT_RECTS = [pygame.Rect(pos[0], pos[1], SLOT_SIZE, SLOT_SIZE) for pos in SLOT_
 SLOT = pygame.image.load("assets/gui/slot.png")
 SELECTED = pygame.image.load("assets/gui/selectedslot.png")
 
+FONT = pygame.font.SysFont("Calibri", 20, bold=True)
+
 class Inventory:
   def __init__(self, items, player, game):
-    self.items = items + [0 for _ in range(10-len(items))]
+    self.items = [[i, 1] for i in items] + [[0,0] for _ in range(10-len(items))]
     self.player = player
     self.game = game
     self.hotbar_sprites = [engine.items.Item(SLOT_POSITIONS_CENTER[i]) for i in range(10)]
@@ -23,8 +25,27 @@ class Inventory:
     for i in self.hotbar_sprites:
       i.setSprite(0)
       i.update()
+    
   def get_slot(self, slot):
-    return self.items[slot]
+    return self.items[slot][0]
+
+  def give(self, item):
+    for i in range(len(self.items)):
+      if self.items[i][0] == item:
+        self.items[i][1] += 1
+        return
+    for i in range(len(self.items)):
+      if self.items[i][0] == 0:
+        self.items[i][0] = item
+        self.items[i][1] = 1
+        return
+  
+  def removeFromSlot(self, slot):
+    self.items[slot][1] -= 1
+    if self.items[slot][1] <= 0:
+      self.items[slot][0] = 0
+
+
   def render(self):
     for i, pos in enumerate(SLOT_POSITIONS):
       if i == self.selected:
@@ -32,9 +53,19 @@ class Inventory:
       else:
         self.game.nozoom.blit(SLOT, pos)
     self.hotbar_group.draw(self.game.nozoom)
+    for i, pos in enumerate(SLOT_POSITIONS_CENTER):
+      if self.items[i][0] != 0:
+        if i == self.selected:
+          c = (0, 0, 0)
+        else:
+          c = (255, 255, 255)
+        tx, ty = pos
+        text = FONT.render(str(self.items[i][1]), True, c)
+        self.game.nozoom.blit(text, (tx+20-text.get_width(), ty))
+  
   def update(self):
     for i in range(10):
-      self.hotbar_sprites[i].setSprite(self.items[i])
+      self.hotbar_sprites[i].setSprite(self.items[i][0])
     self.hotbar_group.update()
   def event(self, event):
     if event.type == pygame.KEYDOWN:
@@ -76,4 +107,4 @@ class Inventory:
             return True
     return False
   def get_selected(self):
-    return self.items[self.selected]
+    return self.items[self.selected][0]

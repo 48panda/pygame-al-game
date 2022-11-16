@@ -2,6 +2,7 @@ import pygame
 from karas.types import Enums
 from karas.types import QuitTriggered
 from karas.sprite import Sprite
+import karas.keypad
 
 class Game:
   def __init__(self,window_size = None, exit_key = pygame.K_ESCAPE, color = (255, 255, 255)):
@@ -12,7 +13,6 @@ class Game:
     else:
       flags = pygame.FULLSCREEN | pygame.SCALED
     self.game = pygame.display.set_mode(size, flags)
-    self.keybinds = {}
     self.exit_key = exit_key
     self.color = color
     self.zoom = pygame.surface.Surface([1920, 1080])
@@ -20,51 +20,35 @@ class Game:
     self.zoompos = (1920//2, 1080//2)
     self.zoomamount = 1
     self.actualzoom = (0,0)
-
-  def triggerevent(self, event, *args, **kwargs):
-    if not event in self.keybinds:
-      return False
-    self.keybinds[event](*args, **kwargs)
-    return True
-
-  def bind(self, event, callback):
-    self.keybinds[event] = callback
+    self.keypad = karas.keypad.Keypad(self.nozoom)
+    self.world = None
+  
+  def assign_world(self, world):
+    self.world = world
+    self.keypad.world = world
 
   def quit(self):
     pygame.quit()
-    raise QuitTriggered()
-
-  def events(self):
-    for event in pygame.event.get():
-      if event.type == pygame.QUIT:
+    raise QuitTriggered()    
+  
+  def event(self, event):
+    if self.keypad.event(event): return True
+    if event.type == pygame.QUIT:
+      self.quit()
+      return True
+    if event.type == pygame.KEYDOWN:
+      if event.key == self.exit_key:
         self.quit()
-      if event.type == pygame.KEYDOWN:
-        if event.key == self.exit_key:
-          self.quit()
-        self.triggerevent(Enums.KEYPRESS, pygame.key.name(event.key))
-      if event.type == pygame.MOUSEBUTTONDOWN:
-        if event.button == 4:
-          self.zoomamount += 0.1
-        if event.button == 5:
-          self.zoomamount -= 0.1
+        return True
+    if event.type == pygame.MOUSEBUTTONDOWN:
+      if event.button == 4:
+        self.zoomamount += 0.1
         self.zoomamount = max(min(self.zoomamount, 2), 1)
-    
-  def get_events(self):
-    for event in pygame.event.get():
-      if event.type == pygame.QUIT:
-        self.quit()
-      if event.type == pygame.KEYDOWN:
-        if event.key == self.exit_key:
-          self.quit()
-        self.triggerevent(Enums.KEYPRESS, pygame.key.name(event.key))
-      if event.type == pygame.MOUSEBUTTONDOWN:
-        if event.button == 4:
-          self.zoomamount += 0.1
-        if event.button == 5:
-          self.zoomamount -= 0.1
+        return True
+      if event.button == 5:
+        self.zoomamount -= 0.1
         self.zoomamount = max(min(self.zoomamount, 2), 1)
-          
-      yield event
+        return True
 
   def render(self):
     zoomed = pygame.transform.scale(self.zoom, (1920 * self.zoomamount, 1080*self.zoomamount))
@@ -80,8 +64,10 @@ class Game:
     if area.right > 1920*self.zoomamount:
       area.right = 1920*self.zoomamount
     self.actualzoom = area.topleft
+    self.keypad.draw()
     self.game.blit(zoomed, (0,0), area=area)
     self.game.blit(self.nozoom, (0,0))
+    self.nozoom.fill((0, 0, 0, 0))
     pygame.display.update()
   
   def unzoompoint(self, x, y):
