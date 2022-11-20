@@ -17,50 +17,42 @@ for name, data in extract_zip(r"assets\player\player.tc").items():
   if name.endswith(".png") and name!="Thumbnail.png":
     layerName = name.split(",")[3]
     if layerName == "Background":
-      CHARACTER = Image.open(io.BytesIO(data))
+      CHARACTER = pygame.image.load(io.BytesIO(data))
     else:
-      player_assets[layerName] = np.array(Image.open(io.BytesIO(data)))
+      player_assets[layerName] = pygame.image.load(io.BytesIO(data))
 
-data = np.array(CHARACTER)
-red, green, blue, alpha = data[:,:,0], data[:,:,1], data[:,:,2], data[:,:,3]
-dark = 88
-#Image.fromarray(alpha, mode="L").show()
-#Image.fromarray(alpha>=245, mode="L").show()
-light = 195
-maskdark = (dark - 10 < red) & (red < dark + 10) & (dark - 10 < green) & (green < dark + 10) & (dark - 10 < blue) & (blue < dark + 10) & (alpha > 1)
-masklight = (light - 10 < red) & (red < light + 10) & (light - 10 < green) & (green < light + 10) & (light - 10 < blue) & (blue < light + 10) & (alpha > 1)
 
-def pilImageToSurface(pilImage):
-    return pygame.image.fromstring(
-        pilImage.tobytes(), pilImage.size, pilImage.mode)
+
+def replace(surface, mappings):
+    w, h = surface.get_size()
+    for x in range(w):
+        for y in range(h):
+          if surface.get_at((x, y))[3] > 128:
+            prev = surface.get_at((x, y))[:3]
+            if prev in mappings:
+              surface.set_at((x,y), pygame.Color(*mappings[prev]))
+
 
 def hueSkinColor(color):
   darker = (color[0]//2, color[1]//2, color[2]//2, 255)#karas.utils.darken_color(*color, factor=0.7)
-  this = np.copy(data)
-  this[maskdark] = darker
-  this[masklight] = color
-  return pilImageToSurface(Image.frombytes("RGBA", this.__array_interface__["shape"], bytes(this)))
+  dark = 88
+  light = 195
+  this = CHARACTER.convert_alpha()
+  replace(this, {(dark, dark, dark): darker, (light, light, light): color})
+  return this
 
 def hueOther(color, name):
-  img = player_assets[name]
+  img = player_assets[name].convert_alpha()
   d = 0
   l = 255
-  r, g, b, a = img[:,:,0], img[:,:,1], img[:,:,2], img[:,:,3]
-  md = (r == d) & (g == d) & (b == d) & (a > 1)
-  ml = (r == l) & (g == l) & (b == l) & (a > 1)
-  im = np.copy(img)
-  im[md] = (color[0]//2, color[1]//2, color[2]//2, 255)
-  im[ml] = color
-  return pilImageToSurface(Image.frombytes("RGBA", im.__array_interface__["shape"], bytes(im)))
+  replace(img, {(d,d,d):(color[0]//2, color[1]//2, color[2]//2, 255), (l,l,l):color}) 
+  return img
 
 def hueEye(color, name):
-  img = player_assets[name]
-  d = 0
-  r, g, b, a = img[:,:,0], img[:,:,1], img[:,:,2], img[:,:,3]
-  md = (r == d) & (g == d) & (b == d) & (a > 1)
-  im = np.copy(img)
-  im[md] = color
-  return pilImageToSurface(Image.frombytes("RGBA", im.__array_interface__["shape"], bytes(im)))
+  img = player_assets[name].convert_alpha()
+  d = 0  
+  replace(img, {(d,d,d):color}) 
+  return img
 
 def scale2x(im):
   return pygame.transform.scale(im, (im.get_width() * 2, im.get_height() * 2))
