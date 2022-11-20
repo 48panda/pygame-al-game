@@ -1,0 +1,1 @@
+from olivas.book import NPCIndex

@@ -3,7 +3,12 @@ grassunder = pygame.image.load("assets/tiles/grassunder.png")
 grassdark = pygame.image.load("assets/tiles/grassdark.png")
 grass = pygame.image.load("assets/tiles/grass.png")
 
-
+LEAVES = pygame.image.load("assets/tiles/leaves.png")
+TREE = pygame.image.load("assets/tiles/tree.png")
+BEDROCK = pygame.image.load("assets/tiles/bedrock.png")
+OBSIDIAN = pygame.image.load("assets/tiles/obsidian.png")
+SHIP = pygame.image.load("assets/buildings/ship.png")
+SHIP = pygame.transform.scale(SHIP, (SHIP.get_width()*2, SHIP.get_height()*2))
 DIRT = pygame.image.load("assets/tiles/dirt.png")
 GRASS = pygame.image.load("assets/tiles/dirt.png")
 GRASS.blit(grassunder, (0,0))

@@ -1,3 +1,11 @@
-import menu
+import game
+import karas
+import olivas
 
-menu.run()
+npcs = olivas.NPCIndex()
+npcs.generateYearsForNPCs(0)
+
+try:
+  game.run(npcs)
+except karas.QuitTriggered:
+  pass
