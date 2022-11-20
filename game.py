@@ -3,15 +3,16 @@ import karas
 import engine
 import barras
 
-def run(npcs):
-  game = karas.game.Game()
+def run(npcs, game, loadingScreen):
+  
 
   #buttons = karas.sprite.Group(karas.sprite.Button)
   #buttons = karas.sprite.Group(karas.sprite.TransparentButton)
   #buttons.createNew("hello!", pos=(200, 200))
 
-  world = engine.world.World(game, 4)
-  npcSpriteGroup = npcs.createNPCs(world)
+  world = engine.world.World(game, 4, loadingScreen)
+  loadingScreen.update("Creating NPCs...")
+  npcSpriteGroup = npcs.createNPCs(world, loadingScreen)
   world.assign_npcs(npcs.sprites, npcs.npcs, npcSpriteGroup)
 
 
@@ -41,8 +42,8 @@ def run(npcs):
 
     world.render()
     players.draw(game.zoom)
-    for n in npcs.sprites:
-      n.update2()
+    for sprite in npcSpriteGroup.spritedict.keys():
+      sprite.update2()
     npcSpriteGroup.draw(game.zoom)
 
     player.render()

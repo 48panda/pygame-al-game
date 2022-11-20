@@ -3,7 +3,7 @@ import karas
 import math
 import PIL
 from PIL import Image
-import numpy as np
+import arrays as np
 from zipfile import ZipFile
 import io
 
@@ -21,7 +21,6 @@ for name, data in extract_zip(r"assets\player\player.tc").items():
     else:
       player_assets[layerName] = np.array(Image.open(io.BytesIO(data)))
 
-
 data = np.array(CHARACTER)
 red, green, blue, alpha = data[:,:,0], data[:,:,1], data[:,:,2], data[:,:,3]
 dark = 88
@@ -36,11 +35,11 @@ def pilImageToSurface(pilImage):
         pilImage.tobytes(), pilImage.size, pilImage.mode)
 
 def hueSkinColor(color):
-  darker = (color[0]//2, color[1]//2, color[2]//2)#karas.utils.darken_color(*color, factor=0.7)
+  darker = (color[0]//2, color[1]//2, color[2]//2, 255)#karas.utils.darken_color(*color, factor=0.7)
   this = np.copy(data)
-  this[:,:,:3][maskdark] = darker
-  this[:,:,:3][masklight] = color
-  return pilImageToSurface(Image.fromarray(this))
+  this[maskdark] = darker
+  this[masklight] = color
+  return pilImageToSurface(Image.frombytes("RGBA", this.__array_interface__["shape"], bytes(this)))
 
 def hueOther(color, name):
   img = player_assets[name]
@@ -50,9 +49,9 @@ def hueOther(color, name):
   md = (r == d) & (g == d) & (b == d) & (a > 1)
   ml = (r == l) & (g == l) & (b == l) & (a > 1)
   im = np.copy(img)
-  im[:,:,:3][md] = (color[0]//2, color[1]//2, color[2]//2)
-  im[:,:,:3][ml] = color
-  return pilImageToSurface(Image.fromarray(im))
+  im[md] = (color[0]//2, color[1]//2, color[2]//2, 255)
+  im[ml] = color
+  return pilImageToSurface(Image.frombytes("RGBA", im.__array_interface__["shape"], bytes(im)))
 
 def hueEye(color, name):
   img = player_assets[name]
@@ -60,8 +59,8 @@ def hueEye(color, name):
   r, g, b, a = img[:,:,0], img[:,:,1], img[:,:,2], img[:,:,3]
   md = (r == d) & (g == d) & (b == d) & (a > 1)
   im = np.copy(img)
-  im[:,:,:3][md] = color
-  return pilImageToSurface(Image.fromarray(im))
+  im[md] = color
+  return pilImageToSurface(Image.frombytes("RGBA", im.__array_interface__["shape"], bytes(im)))
 
 def scale2x(im):
   return pygame.transform.scale(im, (im.get_width() * 2, im.get_height() * 2))
@@ -80,7 +79,7 @@ class Color:
   change = __init__
 
   def get(self):
-    return (self.r, self.g, self.b)
+    return (self.r, self.g, self.b, 255)
   
   def __str__(self):
     return hex(self.r)[2:].zfill(2) + hex(self.g)[2:].zfill(2) + hex(self.b)[2:].zfill(2)

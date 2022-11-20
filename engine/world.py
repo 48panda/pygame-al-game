@@ -5,9 +5,11 @@ import pygame
 import engine.blocks
 import engine.items
 import constants
+import olivas
 
 class World:
-  def __init__(self, game, seed):
+  def __init__(self, game, seed, loadingScreen):
+    self.loadingScreen = loadingScreen
     self.level = []
     self.game = game
     self.scrollx = 0
@@ -144,8 +146,11 @@ class World:
         elif tile == engine.blocks.SHIP:
           if y!=0 and self.level[y-1+tile_y][x+tile_x] == engine.blocks.SHIP:
             continue
-          if x!=0 and self.level[y+tile_y][x+tile_x-1] == engine.blocks.SHIP:
+          if x+tile_x!=0 and self.level[y+tile_y][x+tile_x-1] == engine.blocks.SHIP:
             continue
+          if x==0:
+            while self.level[y+tile_y][x+tile_x-1] == engine.blocks.SHIP:
+              x -= 1
           todraw = engine.tiles.SHIP
         elif tile in engine.blocks.USE_TILE_RENDERER:
           todraw = engine.blocks.TILE[tile.block]
@@ -240,7 +245,14 @@ class World:
   def travel(self, dest):
     self.time = int(dest)
     self.npcSpriteGroup.empty()
-    for i, n in enumerate(self.npcs):
-      if n["born"] <= self.time < n["died"]:
-        self.npcSpriteGroup.add(self.npcSprites[i])
+    total = 0
+    for i, npc in enumerate(self.npcs):
+      if npc["born"] <= self.time < npc["died"]:
+        total += 1
+    current = 0
+    for i, npc in enumerate(self.npcs):
+      if npc["born"] <= self.time < npc["died"]:
+        current += 1
+        self.loadingScreen.update(f"Generating NPCs... {current}/{total}")
+        self.npcSpriteGroup.add(olivas.npc.NPC(self, cstring=npc["appearance"], home=npc["home"]))
     self.text.reset(dest)

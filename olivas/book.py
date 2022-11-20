@@ -67,6 +67,9 @@ class NPCIndex:
         appearance = createRandomAppearance(gender)
         self.npcs.append({"name": name, "gender": gender, "born": year, "died": min(2172, year + age), "appearance": str(appearance), "home": random.randint(20, constants.WORLDWIDTH-20)})
 
-  def createNPCs(self, world):
-    self.sprites = [olivas.npc.NPC(world, cstring=i["appearance"], home=i["home"]) for i in self.npcs]
+  def createNPCs(self, world, loadingScreen):
+    self.sprites = []
+    total = len(self.npcs)
+    for i, npc in enumerate(self.npcs):
+      self.sprites.append(None)
     return pygame.sprite.Group()
