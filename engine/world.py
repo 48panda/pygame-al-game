@@ -4,6 +4,7 @@ import math
 import pygame
 import engine.blocks
 import engine.items
+import constants
 
 class World:
   def __init__(self, game, seed):
@@ -11,45 +12,52 @@ class World:
     self.game = game
     self.scrollx = 0
     self.scrolly = 0
-    self.width = 500
     self.height = 80
     self.surfacelevel = 40
     self.seed = seed
     self.rects = []
     self.items = pygame.sprite.Group()
+    self.time = -70000000
 
     self.generate_level(seed)
+
+  def assign_npcs(self, npcSprites, npcs, npcSpriteGroup):
+    self.npcSprites, self.npcs = npcSprites, npcs
+    self.npcSpriteGroup = npcSpriteGroup
+
   def generate_level(self, seed):
     random.seed(seed)
-    self.level = [[engine.blocks.DIRT for _ in range(self.width)] for _ in range(self.height)]
+    self.level = [[engine.blocks.DIRT for _ in range(constants.WORLDWIDTH)] for _ in range(self.height)]
 
-    surface = ((random.randint(30, 70), random.randint(1, 5)),(random.randint(40, 60), random.randint(2, 6)))
+    self.surface = ((random.randint(30, 70), random.randint(1, 5)),(random.randint(40, 60), random.randint(2, 6)))
 
     trees = ((random.randint(30, 70), 0.5),(random.randint(40, 60), 0.5))
-    landing_site_x = random.randint(50, self.width - 50)
+    landing_site_x = random.randint(50, constants.WORLDWIDTH - 50)
 
     # Fill top part with air
     for y in range(self.height):
-       for x in range(self.width):
-        if self.get_surface_level(x, surface) >= y:
+       for x in range(constants.WORLDWIDTH):
+        if self.get_surface_level(x, self.surface) >= y:
           self.level[y][x] = engine.blocks.AIR
     
     # Add Ship
-    landing_site_y = self.get_surface_level(landing_site_x, surface)
+    landing_site_y = self.get_surface_level(landing_site_x, self.surface)
     for y in range(3):
       for x in range(4):
         self.level[landing_site_y-y][landing_site_x+x] = engine.blocks.SHIP
+    for x in range(4):
+      self.level[landing_site_y+1][landing_site_x + x] = engine.blocks.BEDROCK
     
     # Add trees
     most_recent_tree = 0
-    for x in range(self.width):
+    for x in range(constants.WORLDWIDTH):
       if most_recent_tree > 0:
         most_recent_tree -= 1
         continue
       if landing_site_x <= x <= landing_site_x + 3: continue
       if (self.sumsin(x, trees) + 1 ) / 2 > random.random() * 4:
         most_recent_tree = 3
-        y = self.get_surface_level(x, surface)
+        y = self.get_surface_level(x, self.surface)
         theight = random.randint(5, min(max(y // 2, 10), y))
         for i in range(theight):
           self.level[y][x] = engine.blocks.TREE
@@ -57,7 +65,7 @@ class World:
         y += 1
         for dy in range(11):
           for dx in range(11):
-            if 0 <= x + dx - 5 < self.width:
+            if 0 <= x + dx - 5 < constants.WORLDWIDTH:
               if y + dy - 5 >= 0:
                 if (dx - 5)**2 + (dy - 5)**2 < 25:
                   if self.level[y + dy - 5][x + dx - 5] in engine.blocks.REPLACEABLE:
@@ -65,7 +73,9 @@ class World:
         self.update_neighbours(x, y, drop=False)
         
 
-        
+    #Bedrock at bottom
+    for x in range(constants.WORLDWIDTH):
+      self.level[self.height - 1][x] = engine.blocks.BEDROCK
     
     self.landing_site_x = landing_site_x
     self.landing_site_y = landing_site_y
@@ -105,9 +115,14 @@ class World:
     for x in range(121):
       if x + tile_x < 0:
         continue
-      if x + tile_x + 1 >= self.width:
+      if x + tile_x + 1 >= constants.WORLDWIDTH:
         continue
-      for y in range(68):
+      for y in range(69):
+        if y + tile_y < 0:
+          continue
+        if y + tile_y >= self.height:
+          continue
+
         tile = self.level[y + tile_y][x + tile_x]
         rect = pygame.Rect(x*16+offset_x, y*16+offset_y, 16, 16)
         if tile == engine.blocks.AIR:
@@ -132,10 +147,8 @@ class World:
           if x!=0 and self.level[y+tile_y][x+tile_x-1] == engine.blocks.SHIP:
             continue
           todraw = engine.tiles.SHIP
-        elif tile == engine.blocks.TREE:
-          todraw = engine.tiles.TREE
-        elif tile | engine.blocks.LEAVES:
-          todraw = engine.tiles.LEAVES
+        elif tile in engine.blocks.USE_TILE_RENDERER:
+          todraw = engine.blocks.TILE[tile.block]
         else:
           continue
         if tile in engine.blocks.COLLIDE:
@@ -143,17 +156,22 @@ class World:
         self.game.zoom.blit(todraw, (x*16+offset_x, y*16+offset_y))
     self.items.draw(self.game.zoom)
   
-  def update(self, player):
+  def update(self, player=None):
+    if not player:
+      player = self.player
     self.scrollx = -960 + int(player.x * 16)
     self.scrollx = max(0, self.scrollx)
-    self.scrollx = min((len(self.level[0]) - 1) * 16 - 1920, self.scrollx)
+    self.scrollx = min((constants.WORLDWIDTH - 1) * 16 - 1920, self.scrollx)
+    self.scrolly = -540 + int(player.y * 16)
+    self.scrolly = max(0, self.scrolly)
+    self.scrolly = min((self.height) * 16 - 1080, self.scrolly)
     self.items.update(self.rects)
   
   def get_neighbours(self, x, y):
     n = []
     if x > 0:
       n.append(self.level[y][x-1])
-    if x + 1 < self.width:
+    if x + 1 < constants.WORLDWIDTH:
       n.append(self.level[y][x+1])
     if y > 0:
       n.append(self.level[y-1][x])
@@ -169,7 +187,7 @@ class World:
   def update_neighbours(self, x, y, drop=False):
     if x > 0:
       engine.blocks.UPDATE[self.level[y][x-1].block](state = self.level[y][x-1], neighbours = self.get_neighbours(x-1, y), changeState = self.changeState, x = x-1, y = y, down = self.get_down(x-1, y), drop=drop)
-    if x + 1 < self.width:
+    if x + 1 < constants.WORLDWIDTH:
       engine.blocks.UPDATE[self.level[y][x+1].block](state = self.level[y][x+1], neighbours = self.get_neighbours(x+1, y), changeState = self.changeState, x = x+1, y = y, down = self.get_down(x+1, y), drop=drop)
     if y > 0:
       engine.blocks.UPDATE[self.level[y-1][x].block](state = self.level[y-1][x], neighbours = self.get_neighbours(x, y-1), changeState = self.changeState, x = x, y = y-1, down = self.get_down(x, y-1), drop=drop)
@@ -183,7 +201,7 @@ class World:
   def changeState(self, x, y, state, drop=False):
     if drop and (self.level[y][x].block != state.block):
       if engine.blocks.TO_ITEM[self.level[y][x].block] is not None:
-        self.items.add(engine.items.InWorldItem(self, (x, y), [self.randPosNeg()*random.uniform(3, 5),random.uniform(-5, -3)], 1920, engine.blocks.TO_ITEM[self.level[y][x].block]))
+        self.items.add(engine.items.InWorldItem(self, (x, y), engine.blocks.TO_ITEM[self.level[y][x].block]))
     self.level[y][x] = state
     self.update_neighbours(x, y, drop=drop)
   
@@ -211,13 +229,18 @@ class World:
             self.changeState(clickx, clicky, engine.blocks.AIR, drop=True)
 
             return True
-        if self.player.inventory.get_selected() == engine.items.DIRT:
+        if self.player.inventory.get_selected() in engine.items.PLACABLE:
           if self.level[clicky][clickx] in engine.blocks.REPLACEABLE:
-            self.changeState(clickx, clicky, engine.blocks.DIRT)
+            self.changeState(clickx, clicky, engine.blocks.PLACE_MAP[self.player.inventory.get_selected()])
             self.player.inventory.removeFromSlot(self.player.inventory.selected)
             return True
         if self.level[clicky][clickx] == engine.blocks.SHIP:
           self.game.keypad.enable()
 
   def travel(self, dest):
+    self.time = int(dest)
+    self.npcSpriteGroup.empty()
+    for i, n in enumerate(self.npcs):
+      if n["born"] <= self.time < n["died"]:
+        self.npcSpriteGroup.add(self.npcSprites[i])
     self.text.reset(dest)

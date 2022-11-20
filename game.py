@@ -3,7 +3,7 @@ import karas
 import engine
 import barras
 
-def run():
+def run(npcs):
   game = karas.game.Game()
 
   #buttons = karas.sprite.Group(karas.sprite.Button)
@@ -11,6 +11,10 @@ def run():
   #buttons.createNew("hello!", pos=(200, 200))
 
   world = engine.world.World(game, 4)
+  npcSpriteGroup = npcs.createNPCs(world)
+  world.assign_npcs(npcs.sprites, npcs.npcs, npcSpriteGroup)
+
+
   game.assign_world(world)
   x = 0
 
@@ -26,30 +30,29 @@ def run():
   textGroup = pygame.sprite.GroupSingle(text)
 
   world.assign_text(text)
+  world.travel("50")
 
   while True:
     #buttons.update()
-
     world.update(player)
+    npcSpriteGroup.update()
     players.update()
-    #textGroup.update()
+    textGroup.update()
 
     world.render()
     players.draw(game.zoom)
+    for n in npcs.sprites:
+      n.update2()
+    npcSpriteGroup.draw(game.zoom)
+
     player.render()
     #textGroup.draw(game.nozoom)
     
     pressed = pygame.key.get_pressed()
-    if pressed[pygame.K_a]:
-      player.vx -= 0.15
-      player.flipped = False
-    if pressed[pygame.K_d]:
-      player.vx += 0.15
-      player.flipped = True
     #buttons.draw(game.game)
     for event in pygame.event.get():
-      if game.event(event): continue
       if player.event(event): continue
+      if game.event(event): continue
       if world.event(event): continue
     game.render()
     clock.tick(30)

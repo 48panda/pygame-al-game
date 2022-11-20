@@ -1,0 +1,1 @@
+WORLDWIDTH = 500

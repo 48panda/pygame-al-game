@@ -1,0 +1,27 @@
+16,Markdown,./readme.md
+84241,CSV,./assets/names.csv
+157,JSON,./assets/special.json
+1349443,CSV,./assets/surnames.csv
+22,Python,./barras/__init__.py
+969,Python,./barras/timetext.py
+62,Python,./engine/__init__.py
+2535,Python,./engine/blocks.py
+6856,Python,./engine/character.py
+7076,Python,./engine/inventory.py
+1324,Python,./engine/items.py
+644,Python,./engine/player.py
+1962,Python,./engine/tiles.py
+9034,Python,./engine/world.py
+1358,Python,./game.py
+108,Python,./karas/__init__.py
+2503,Python,./karas/game.py
+3956,Python,./karas/keypad.py
+4171,Python,./karas/sprite.py
+67,Python,./karas/types.py
+1739,Python,./karas/utils.py
+76,DOS Batch,./lines.bat
+157,Python,./main.py
+32,Python,./olivas/__init__.py
+1335,Python,./olivas/book.py
+179,Text,./requirements.txt
+2484,Python,./setup.py

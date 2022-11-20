@@ -5,3 +5,4 @@ dist
 build
 *.zip
 v*.*/
+special.json

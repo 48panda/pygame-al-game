@@ -36,13 +36,15 @@ class blockGroup:
 
 def blockstate(block, num_states):
   return tuple([Blockstate(block, i) for i in range(num_states)])
-allBlockStates = (Blockstateless(0), Blockstateless(1), Blockstateless(2), Blockstateless(3), blockstate(4, 11))
+allBlockStates = (Blockstateless(0), Blockstateless(1), Blockstateless(2), Blockstateless(3), blockstate(4, 11), Blockstateless(5), Blockstateless(6))
 
 AIR = allBlockStates[0]
 DIRT = allBlockStates[1]
 SHIP = allBlockStates[2]
 TREE = allBlockStates[3]
 LEAVES= allBlockStates[4][0]
+OBSIDIAN = allBlockStates[5]
+BEDROCK = allBlockStates[6]
 
 import pygame
 pygame.font.init()
@@ -69,10 +71,14 @@ def log_update(state, down, changeState, x, y, drop, **_):
   if not (down in COLLIDE or down | TREE):
     changeState(x, y, AIR, drop=drop)
 
-UPDATE = (nothing, nothing, nothing, log_update, leaf_update)
-TO_ITEM = (None, engine.items.DIRT, None, engine.items.TREE, None)
+UPDATE = (nothing, nothing, nothing, log_update, leaf_update, nothing, nothing)
+TO_ITEM = (None, engine.items.DIRT, None, engine.items.TREE, None, engine.items.OBSIDIAN, None)
+TILE = (None, None, None, engine.tiles.TREE, engine.tiles.LEAVES, engine.tiles.OBSIDIAN, engine.tiles.BEDROCK)
 
-MINEABLE_PICKAXE = blockGroup(DIRT, TREE, LEAVES)
+MINEABLE_PICKAXE = blockGroup(DIRT, TREE, LEAVES, OBSIDIAN)
 REPLACEABLE = blockGroup(AIR, LEAVES)
 WALKABLE = blockGroup(AIR, SHIP, TREE, LEAVES)
-COLLIDE = blockGroup(DIRT)
+COLLIDE = blockGroup(DIRT, OBSIDIAN, BEDROCK)
+USE_TILE_RENDERER = blockGroup(DIRT, TREE, LEAVES, OBSIDIAN, BEDROCK)
+
+PLACE_MAP = (None, DIRT, None, None, OBSIDIAN)

@@ -28,7 +28,8 @@ class Keypad:
       self.hover_keys[i].blit(text, r)
   
   def enable(self):
-    self.enabled = False#True
+    self.enabled = True
+    self.disable()
 
   def disable(self):
     self.enabled = False

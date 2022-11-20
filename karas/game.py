@@ -40,19 +40,17 @@ class Game:
       if event.key == self.exit_key:
         self.quit()
         return True
-    if event.type == pygame.MOUSEBUTTONDOWN:
-      if event.button == 4:
-        self.zoomamount += 0.1
-        self.zoomamount = max(min(self.zoomamount, 2), 1)
-        return True
-      if event.button == 5:
-        self.zoomamount -= 0.1
-        self.zoomamount = max(min(self.zoomamount, 2), 1)
-        return True
+    #if event.type == pygame.MOUSEBUTTONDOWN:
+    #  if event.button == 4:
+    #    self.zoomamount += 0.1
+    #    self.zoomamount = max(min(self.zoomamount, 2), 1)
+    #    return True
+    #  if event.button == 5:
+    #    self.zoomamount -= 0.1
+    #    self.zoomamount = max(min(self.zoomamount, 2), 1)
+    #    return True
 
   def render(self):
-    zoomed = pygame.transform.scale(self.zoom, (1920 * self.zoomamount, 1080*self.zoomamount))
-    self.zoom.fill((255, 255, 255))
     area = pygame.Rect(0, 0, 1920, 1080)
     area.center = self.zoompos[0] * self.zoomamount, self.zoompos[1] * self.zoomamount
     if area.left < 0:
@@ -65,7 +63,10 @@ class Game:
       area.right = 1920*self.zoomamount
     self.actualzoom = area.topleft
     self.keypad.draw()
-    self.game.blit(zoomed, (0,0), area=area)
+    #zoomed = pygame.transform.scale(self.zoom, (1920 * self.zoomamount, 1080*self.zoomamount))
+    #self.game.blit(zoomed, (0,0), area=area)
+    self.game.blit(self.zoom, (0,0))
+    self.zoom.fill((255, 255, 255))
     self.game.blit(self.nozoom, (0,0))
     self.nozoom.fill((0, 0, 0, 0))
     pygame.display.update()
