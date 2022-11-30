@@ -6,6 +6,7 @@ class Sprite(pygame.sprite.Sprite):
   width = 50
   height = 50
   bottomLeftAligned = False
+  topLeftAligned = False
   spritesheet = False
   spritewidth = 0
   spriteheight = 0
@@ -49,6 +50,8 @@ class Sprite(pygame.sprite.Sprite):
     self.rect = self.im.get_rect()
     if self.bottomLeftAligned:
       self.rect.bottomleft = self.pos
+    elif self.topLeftAligned:
+      self.rect.topleft = self.pos
     else:
       self.rect.center = self.pos
     if callupdate:
@@ -56,6 +59,8 @@ class Sprite(pygame.sprite.Sprite):
     self.rect = self.im.get_rect()
     if self.bottomLeftAligned:
       self.rect.bottomleft = self.pos
+    elif self.topLeftAligned:
+      self.rect.topleft = self.pos
     else:
       self.rect.center = self.pos
     if self.hover:

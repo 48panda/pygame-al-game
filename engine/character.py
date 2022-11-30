@@ -3,7 +3,6 @@ import karas
 import math
 import PIL
 from PIL import Image
-import arrays as np
 from zipfile import ZipFile
 import io
 
@@ -17,9 +16,9 @@ for name, data in extract_zip(r"assets\player\player.tc").items():
   if name.endswith(".png") and name!="Thumbnail.png":
     layerName = name.split(",")[3]
     if layerName == "Background":
-      CHARACTER = pygame.image.load(io.BytesIO(data))
+      CHARACTER = pygame.image.load(io.BytesIO(data)).convert_alpha()
     else:
-      player_assets[layerName] = pygame.image.load(io.BytesIO(data))
+      player_assets[layerName] = pygame.image.load(io.BytesIO(data)).convert_alpha()
 
 
 
@@ -142,23 +141,28 @@ class Character(karas.sprite.Sprite):
     self.jump = 0
     self.flipped = True
     self.walktimer = 0
+    self.out_of_frame = False
 
   def onupdate(self, *args, **kwargs):
-    if self.pos[0] < 0 or self.pos[0] > 1920:
+    self.pos = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly
+    if self.pos[0] < -80 or self.pos[0] > 1920:
+      self.out_of_frame = True
       return
+    self.out_of_frame = False
     new = self.rect
     self.vy += 0.15
     new.bottomleft = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly
     c = new.midbottom
     new.width = 26
-    new.height = 48
+    new.height = 40
     new.midbottom = c
     new.left = (self.x + self.vx) * 16 - self.world.scrollx + 7
-    #new.left = max(new.left, 7)
-    if len(new.collidelistall(self.world.rects)) != 0:
-      new.bottom -= 16
-      if len(new.collidelistall(self.world.rects)) != 0:
-        new.bottom += 16
+    if len(new.collidelistall(self.world.rects)) != 0 and not self.out_of_frame:
+      if self.vy == 0.15:
+        new.bottom -= 16
+      if self.vy != 0.15 or len(new.collidelistall(self.world.rects)) != 0 and not self.out_of_frame:
+        if self.vy == 0.15:
+          new.bottom += 16
         for coll in new.collidelistall(self.world.rects):
           block = self.world.rects[coll]
           if self.vx > 0:
@@ -167,12 +171,12 @@ class Character(karas.sprite.Sprite):
             new.left = max(new.left, block.right)
         self.vx = 0
     new.bottom = (self.y + self.vy) * 16 - self.world.scrolly
-    if len(new.collidelistall(self.world.rects)) != 0:
+    if len(new.collidelistall(self.world.rects)) != 0 and not self.out_of_frame:
       for coll in new.collidelistall(self.world.rects):
         block = self.world.rects[coll]
         if self.vy > 0:
           new.bottom = min(new.bottom, block.top)
-        else:
+        elif self.vy < 0:
           new.top = max(new.top, block.bottom)
       self.vy = 0
 
@@ -188,8 +192,8 @@ class Character(karas.sprite.Sprite):
     self.vy *= 0.9
     if abs(self.vx) < 0.01:
       self.vx = 0
-    self.x = min(len(self.world.level[0]) - 1 - (self.spritewidth / 16), max(0, self.x))
     if self.player:
+      self.x = min(len(self.world.level[0]) - 1 - (self.spritewidth / 16), max(0, self.x))
       self.world.update()
     self.pos = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly
     if self.vy != 0:

@@ -1,11 +1,11 @@
 import pygame
 
-CIRCLE = pygame.image.load("assets/gui/circle.png")
-FILLEDCIRCLE = pygame.image.load("assets/gui/filledcircle.png")
-GREENCIRCLE = pygame.image.load("assets/gui/greencircle.png")
-FILLEDGREENCIRCLE = pygame.image.load("assets/gui/filledgreencircle.png")
-REDCIRCLE = pygame.image.load("assets/gui/redcircle.png")
-FILLEDREDCIRCLE = pygame.image.load("assets/gui/filledredcircle.png")
+CIRCLE = pygame.image.load("assets/gui/circle.png").convert_alpha()
+FILLEDCIRCLE = pygame.image.load("assets/gui/filledcircle.png").convert_alpha()
+GREENCIRCLE = pygame.image.load("assets/gui/greencircle.png").convert_alpha()
+FILLEDGREENCIRCLE = pygame.image.load("assets/gui/filledgreencircle.png").convert_alpha()
+REDCIRCLE = pygame.image.load("assets/gui/redcircle.png").convert_alpha()
+FILLEDREDCIRCLE = pygame.image.load("assets/gui/filledredcircle.png").convert_alpha()
 
 class Keypad:
   def __init__(self, surface):
@@ -29,7 +29,6 @@ class Keypad:
   
   def enable(self):
     self.enabled = True
-    self.disable()
 
   def disable(self):
     self.enabled = False
@@ -69,7 +68,7 @@ class Keypad:
         self.game.blit(REDCIRCLE, (self.cancel_pos[0]-20,self.cancel_pos[1]-20))
       
       if self.dest:
-        if 0 <= int(self.dest) < 2150:
+        if 0 < int(self.dest) < 2150:
           text = self.font.render(self.dest, True, (0, 224, 45))
         else:
           text = self.font.render(self.dest, True, (224, 0, 0))
@@ -91,9 +90,12 @@ class Keypad:
           self.dest = ""
           return True
         if self.if_near(self.go_pos, event.pos, 20):
-          self.world.travel(self.dest)
+          if 0 < int(self.dest) < 2150:
+            self.disable()
+            self.world.travel(self.dest)
           return True
       if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_ESCAPE:
+          self.dest = ""
           self.disable()
           return True

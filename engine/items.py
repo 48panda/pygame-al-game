@@ -1,19 +1,22 @@
 import karas
 import pygame
 
-ITEMS_IMG = pygame.image.load("assets/items/items.png")
+ITEMS_IMG = pygame.image.load("assets/items/items.png").convert_alpha()
 
 DIRT = 1
 WOODEN_PICKAXE = 2
 TREE = 3
 OBSIDIAN = 4
+RADIANITE_ORE = 5
+STONE = 6
+RADIANITE_INGOT = 7
 
-PLACABLE = [DIRT, OBSIDIAN]
+PLACABLE = [DIRT, OBSIDIAN, STONE]
 PICKAXES = [WOODEN_PICKAXE]
 
 SPRITESHEET = pygame.transform.scale(ITEMS_IMG, (ITEMS_IMG.get_size()[0]*2, ITEMS_IMG.get_size()[1]*2))
 
-NUM_SPRITES = 5
+NUM_SPRITES = 8
 
 class Item(karas.sprite.Sprite):
   spritesheet = True

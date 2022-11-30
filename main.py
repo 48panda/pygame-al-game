@@ -9,6 +9,14 @@ loadingScreen.update("Loading code...")
 import game
 import karas
 import olivas
+import engine
+import saras
+import constants
+
+player_appearance = str(engine.character.CharacterCreationValues())
+
+if constants.SHOW_CUTSCENE:
+  saras.cutscene.play_opening_cutscene(loadingScreen, player_appearance)
 
 loadingScreen.update("Transitioning to Game Class...")
 Game = karas.game.Game()

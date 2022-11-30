@@ -1,5 +1,6 @@
 import pygame
 import engine.items
+import engine.crafting
 
 SLOT_SIZE = 45
 PADDED_SLOT_SIZE = 50
@@ -11,10 +12,16 @@ INV_POSITIONS = sum([[(i[0], i[1] - PADDED_SLOT_SIZE * h) for i in SLOT_POSITION
 INV_POSITIONS_CENTER = sum([[(i[0], i[1] - PADDED_SLOT_SIZE * h) for i in SLOT_POSITIONS_CENTER] for h in range(1,4)], [])
 INV_RECTS = [pygame.Rect(pos[0], pos[1], SLOT_SIZE, SLOT_SIZE) for pos in INV_POSITIONS]
 
+CRAFT_POS = [(1920//2-(-6-i)*PADDED_SLOT_SIZE,1080-PADDED_SLOT_SIZE) for i in range(10)]
+CRAFT_POS_C = [(1920//2-(-6-i)*PADDED_SLOT_SIZE + SLOT_SIZE/2,1080-PADDED_SLOT_SIZE + SLOT_SIZE/2) for i in range(10)]
+CRAFTING_POSITIONS = sum([[(i[0], i[1] - PADDED_SLOT_SIZE * h) for i in CRAFT_POS] for h in range(4)], [])
+CRAFTING_POSITIONS_CENTER = sum([[(i[0], i[1] - PADDED_SLOT_SIZE * h) for i in CRAFT_POS_C] for h in range(4)], [])
+CRAFTING_RECTS = [pygame.Rect(pos[0], pos[1], SLOT_SIZE, SLOT_SIZE) for pos in CRAFTING_POSITIONS]
+CRAFTING_RECTS_TALL = [pygame.Rect(pos[0], pos[1] -  PADDED_SLOT_SIZE*3, SLOT_SIZE, SLOT_SIZE + PADDED_SLOT_SIZE*3) for pos in CRAFT_POS]
 
-SLOT = pygame.image.load("assets/gui/slot.png")
-SELECTED = pygame.image.load("assets/gui/selectedslot.png")
-SWAP = pygame.image.load("assets/gui/swapslot.png")
+SLOT = pygame.image.load("assets/gui/slot.png").convert_alpha()
+SELECTED = pygame.image.load("assets/gui/selectedslot.png").convert_alpha()
+SWAP = pygame.image.load("assets/gui/swapslot.png").convert_alpha()
 
 FONT = pygame.font.SysFont("Calibri", 20, bold=True)
 
@@ -27,36 +34,70 @@ class Inventory:
     self.hotbar_group = pygame.sprite.Group(self.hotbar_sprites)
     self.inventory_sprites = [engine.items.Item(INV_POSITIONS_CENTER[i]) for i in range(30)]
     self.inventory_group = pygame.sprite.Group(self.inventory_sprites)
+    self.crafting_sprites = [engine.items.Item(CRAFTING_POSITIONS_CENTER[i]) for i in range(40)]
+    self.crafting_group = pygame.sprite.Group(self.crafting_sprites)
     self.selected = 0
     self.player_sprite = engine.items.Item(self.player.rect.center)
     self.player_sprite_group = pygame.sprite.GroupSingle(self.player_sprite)
     self.showall = False
     self.swap = -1
+    self.recipes = []
     for i in self.hotbar_sprites:
       i.setSprite(0)
       i.update()
     for i in self.inventory_sprites:
       i.setSprite(0)
       i.update()
+    for i in self.crafting_sprites:
+      i.setSprite(0)
+      i.update()
+    self.update_craftable()
     
   def get_slot(self, slot):
     return self.items[slot][0]
+  
+  def has(self, item, count=1):
+    for i in self.items:
+      if i[0] == item:
+        return i[1] >= count
+    return False
 
-  def give(self, item):
+  def num(self, item):
+    for i in self.items:
+      if i[0] == item:
+        return i[1]
+    return 0
+    
+  def give(self, item, num=1, reloadRecipes=True):
     for i in range(len(self.items)):
       if self.items[i][0] == item:
-        self.items[i][1] += 1
+        self.items[i][1] += num
+        if reloadRecipes:
+          self.update_craftable()
         return
     for i in range(len(self.items)):
       if self.items[i][0] == 0:
         self.items[i][0] = item
-        self.items[i][1] = 1
+        self.items[i][1] = num
+        if reloadRecipes:
+          self.update_craftable()
         return
+  def remove(self, item, num=1, reloadRecipes=True):
+    for i in range(len(self.items)):
+      if self.items[i][0] == item:
+        self.items[i][1] -= num
+        if self.items[i][1] <= 0:
+          self.items[i] = [0,0]
+        if reloadRecipes:
+          self.update_craftable()
+        return
+      
   
   def removeFromSlot(self, slot):
     self.items[slot][1] -= 1
     if self.items[slot][1] <= 0:
       self.items[slot][0] = 0
+    self.update_craftable()
 
 
   def render(self):
@@ -94,6 +135,30 @@ class Inventory:
           tx, ty = pos
           text = FONT.render(str(self.items[i][1]), True, c)
           self.game.nozoom.blit(text, (tx+20-text.get_width(), ty))
+
+      for i, rec in enumerate(self.recipes):
+        r = CRAFTING_RECTS_TALL[i]
+        for j in range(4):
+          if rec[j] is not None:
+            indx = i + j*10
+            pos = CRAFTING_POSITIONS[indx]
+            if r.collidepoint(*pygame.mouse.get_pos()):
+              self.game.nozoom.blit(SELECTED, pos)
+            else:
+              self.game.nozoom.blit(SLOT, pos)
+      self.crafting_group.draw(self.game.nozoom)
+      for i, rec in enumerate(self.recipes):
+        for j in range(4):
+          if rec[j] is not None:
+            indx = i + j*10
+            pos = CRAFTING_POSITIONS_CENTER[indx]
+            if r.collidepoint(*pygame.mouse.get_pos()):
+              c = (0, 0, 0)
+            else:
+              c = (255, 255, 255)
+            tx, ty = pos
+            text = FONT.render(str(rec[j][1]), True, c)
+            self.game.nozoom.blit(text, (tx+20-text.get_width(), ty))
     else:
       for i, pos in enumerate(SLOT_POSITIONS):
         if i == self.selected:
@@ -118,6 +183,29 @@ class Inventory:
     for i in range(30):
       self.inventory_sprites[i].setSprite(self.items[i+10][0])
     self.inventory_group.update()
+    self.crafting_group.update()
+  
+  def update_craftable(self):
+    self.recipes = []
+    for recipe in engine.crafting.RECIPES:
+      max_num = 1000
+      recipe_entry = []
+      for inp in recipe.inputs:
+        max_num = min(max_num,self.num(inp.item) // inp.quantity)
+      for inp in recipe.inputs:
+        recipe_entry.append([inp.item, inp.quantity])# * max_num
+      recipe_entry.extend([None] * (3 - len(recipe_entry)))
+      recipe_entry.append([recipe.output.item, recipe.output.quantity])# * max_num
+      if max_num > 0:
+        self.recipes.append(recipe_entry[::-1])
+    for s in self.crafting_sprites:
+      s.setSprite(0)
+    for i, rec in enumerate(self.recipes):
+      for j, item in enumerate(rec):
+        indx = i + j*10
+        if item is not None:
+          self.crafting_sprites[indx].setSprite(item[0])
+
   def event(self, event):
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_1:
@@ -163,25 +251,33 @@ class Inventory:
     elif event.type == pygame.MOUSEBUTTONDOWN:
       if event.button == 1:
         if self.showall:
-          if self.swap == -1:
-            for i, r in enumerate(SLOT_RECTS):
-              if r.collidepoint(event.pos):
-                self.swap = i
-            for i, r in enumerate(INV_RECTS):
-              if r.collidepoint(event.pos):
-                self.swap = i + 10
+          for i in range(10):
+            if CRAFTING_RECTS_TALL[i].collidepoint(*event.pos):
+              for j in range(1,4):
+                if self.recipes[i][j] is not None:
+                  self.remove(self.recipes[i][j][0], self.recipes[i][j][1], False)
+              self.give(self.recipes[i][0][0], self.recipes[i][0][1])
+              return True
           else:
-            clicked = -1
-            for i, r in enumerate(SLOT_RECTS):
-              if r.collidepoint(event.pos):
-                clicked = i
-            for i, r in enumerate(INV_RECTS):
-              if r.collidepoint(event.pos):
-                clicked = i + 10
-            if clicked !=-1:
-              if clicked != self.swap:
-                self.items[clicked], self.items[self.swap] = self.items[self.swap], self.items[clicked]
-              self.swap = -1
+            if self.swap == -1:
+              for i, r in enumerate(SLOT_RECTS):
+                if r.collidepoint(event.pos):
+                  self.swap = i
+              for i, r in enumerate(INV_RECTS):
+                if r.collidepoint(event.pos):
+                  self.swap = i + 10
+            else:
+              clicked = -1
+              for i, r in enumerate(SLOT_RECTS):
+                if r.collidepoint(event.pos):
+                  clicked = i
+              for i, r in enumerate(INV_RECTS):
+                if r.collidepoint(event.pos):
+                  clicked = i + 10
+              if clicked !=-1:
+                if clicked != self.swap:
+                  self.items[clicked], self.items[self.swap] = self.items[self.swap], self.items[clicked]
+                self.swap = -1
           return True
         else:
           for i, r in enumerate(SLOT_RECTS):
