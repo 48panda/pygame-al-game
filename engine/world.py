@@ -8,26 +8,42 @@ import constants
 import olivas
 import time
 import pygame.mixer_music as music
+import copy
+import mono
 
 class World:
-  def __init__(self, game, seed, loadingScreen, cutscene=False):
+  def __init__(self, game, seed, loadingScreen, clock, cutscene=False, hasBeenLoaded=False):
     self.loadingScreen = loadingScreen
-    self.level = []
     self.game = game
-    self.scrollx = 0
-    self.scrolly = 0
+    self.clock = clock
     self.height = 80
     self.surfacelevel = 40
     self.stonelevel = 50
     self.seed = seed
     self.rects = []
     self.items = pygame.sprite.Group()
-    self.time = -1
-    self.key_points = [None for i in range (2175)]
-    self.cutscene = False
+    self.cutscene = cutscene
+    self.skipRenderFrame = False
+    if not hasBeenLoaded:
+      self.level = []
+      self.time = -1
+      self.scrollx = 0
+      self.key_points = [None for i in range (2175)]
+      self.scrolly = 0
+      self.book = None
 
-    if not cutscene:
+    if not cutscene and not hasBeenLoaded:
       self.generate_level(seed)
+  
+  def __getstate__(self):
+    return (1, self.time, self.key_points, self.level, self.scrollx, self.scrolly, self.book, self.player, self.npcs, self.landing_site_x, self.landing_site_y)
+  
+  def __setstate__(self, state):
+    if state[0] == 1:
+      _, self.time, self.key_points, self.level, self.scrollx, self.scrolly, self.book, self.player, self.npcs, self.landing_site_x, self.landing_site_y = state
+  
+  def assign_book(self, book):
+    self.book = book
 
   def assign_npcs(self, npcSprites, npcs, npcSpriteGroup):
     self.npcSprites, self.npcs = npcSprites, npcs
@@ -39,6 +55,7 @@ class World:
 
     self.surface = ((temp:=random.randint(30, 70), random.randint(0, temp-1), random.randint(1, 5)),(temp:=random.randint(40, 60), random.randint(0, temp-1), random.randint(2, 6)))
     self.stone = ((temp:=random.randint(30, 70), random.randint(0, temp-1), random.randint(1, 5)),(temp:=random.randint(40, 60), random.randint(0, temp-1), random.randint(2, 6)))
+    sand = ((temp:=random.randint(30, 50), random.randint(0, temp-1), sandlevel:=random.randint(80, 100)),(temp:=random.uniform(1, 5), random.randint(0, int(temp-1)), random.randint(3, 5)))
 
     trees = ((temp:=random.randint(30, 70), random.randint(0, temp-1), 0.5),(temp:=random.randint(40, 60), random.randint(0, temp-1), 0.5))
     landing_site_x = random.randint(20, 50)
@@ -50,6 +67,12 @@ class World:
         if self.stonelevel + self.sumsin(x, self.stone) < y:
           self.level[y][x] = engine.blocks.STONE
 
+    # Fill with sand
+    for y in range(self.height):
+       for x in range(constants.WORLDWIDTH):
+        if 50-sandlevel + self.sumsin(x, sand) >= y:
+          self.level[y][x] = engine.blocks.SAND
+  
     # Fill top part with air
     for y in range(self.height):
        for x in range(constants.WORLDWIDTH):
@@ -87,7 +110,7 @@ class World:
     for x, y in rel_pos:
       self.level[self.height-15 + y][x+rad_x] = engine.blocks.RADIANITE
 
-    self.key_points[0] = self.level
+    self.key_points[0] = copy.deepcopy(self.level)
 
     #self.to_png()
 
@@ -139,21 +162,23 @@ class World:
         tile = self.level[y + tile_y][x + tile_x]
         rect = pygame.Rect(x*16+offset_x, y*16+offset_y, 16, 16)
         todraw = engine.blocks.TILE[tile.block]
+        area = None
         if todraw:
-          pass
-        elif tile == engine.blocks.AIR:
+          if tile | engine.blocks.PLANKS:
+            area = (0,16*((y + tile_y + math.floor(4*math.sin(100*math.floor(x+tile_x)))) % 4),16,16)
+        elif tile | engine.blocks.AIR:
           continue
-        elif tile == engine.blocks.DIRT:
-          if y==0 or self.level[y-1 + tile_y][x + tile_x] != engine.blocks.AIR:
+        elif tile | engine.blocks.DIRT:
+          if y==0 or self.level[y-1 + tile_y][x + tile_x] ^ engine.blocks.AIR:
             todraw = engine.tiles.DIRT
           else:
-            if x==0 or self.level[y + tile_y][x + tile_x-1] != engine.blocks.AIR:
-              if x==len(self.level[y+tile_y]) or self.level[y + tile_y][x + tile_x+1] != engine.blocks.AIR:
+            if x==0 or self.level[y + tile_y][x + tile_x-1] ^ engine.blocks.AIR:
+              if x==len(self.level[y+tile_y]) or self.level[y + tile_y][x + tile_x+1] ^ engine.blocks.AIR:
                 todraw = engine.tiles.GRASS
               else:   
                 todraw = engine.tiles.GRASS_r
             else:
-              if x==len(self.level[y+tile_y]) or self.level[y + tile_y][x + tile_x+1] != engine.blocks.AIR:
+              if x==len(self.level[y+tile_y]) or self.level[y + tile_y][x + tile_x+1] ^ engine.blocks.AIR:
                 todraw = engine.tiles.GRASS_l
               else:
                 todraw = engine.tiles.GRASS_b
@@ -196,7 +221,7 @@ class World:
           continue
         if tile in engine.blocks.COLLIDE:
           self.rects.append(rect)
-        self.game.zoom.blit(todraw, (x*16+offset_x, y*16+offset_y))
+        self.game.zoom.blit(todraw, (x*16+offset_x, y*16+offset_y), area=area)
     self.items.draw(self.game.zoom)
   
   def update(self, player=None):
@@ -286,44 +311,77 @@ class World:
             self.set_at(clickx, clicky, engine.blocks.PLACE_MAP[self.player.inventory.get_selected()])
             self.player.inventory.removeFromSlot(self.player.inventory.selected)
             return True
-        if self.level[clicky][clickx] == engine.blocks.SHIP:
-          self.game.keypad.enable()
+        if self.level[clicky][clickx] | engine.blocks.SHIP:
+          if self.book.quest_id.startswith("tutorial"):
+            if self.book.quest_id == "tutorial-3":
+              self.travel("-2")
+              self.book.next_quest()
+          else:
+            self.game.keypad.enable()
 
-  def travel(self, dest):
-    music.stop()
-    music.load("assets/sound/music/startload.mp3")
-    music.play(1)
-    music.queue("assets/sound/music/loading.mp3", loops=-1)
-    self.loadingScreen.update("Saving Time...")
-
-    self.key_points[self.time+1] = self.level
-
-    self.time = int(dest)
-    while self.key_points[self.time + 1] == None:
-      self.time -= 1
-    
-    for i in range(self.time+1, len(self.key_points)):
-      self.key_points[i] = None
-
-    for y in range(self.time, int(dest)):
-      self.loadingScreen.update("Travelating...", timeText=str(y+1))
-      self.move_forwards_year()
-    
+  def get_copy(self):
+    return [[cell for cell in r] for r in self.level]
+  
+  def load_npcs(self):
     self.npcSpriteGroup.empty()
     total = 0
     for i, npc in enumerate(self.npcs):
       if npc["born"] <= self.time < npc["died"]:
         total += 1
+      elif "special_appearences" in npc:
+        for i in npc["special_appearences"]:
+          if i["year"] == self.time and i["quest_id"] == self.book.quest_id:
+            total += 1
+            break
     current = 0
     for i, npc in enumerate(self.npcs):
       if npc["born"] <= self.time < npc["died"]:
         current += 1
         self.loadingScreen.update(f"Generating NPCs... {current}/{total}")
         self.npcSpriteGroup.add(olivas.npc.NPC(self, cstring=npc["appearance"], home=npc["home"], npc=npc))
-    for i in range(100):
+      elif "special_appearences" in npc:
+        for i in npc["special_appearences"]:
+          if i["year"] == self.time and i["quest_id"] == self.book.quest_id:
+            current += 1
+            self.loadingScreen.update(f"Generating NPCs... {current}/{total}")
+            self.npcSpriteGroup.add(olivas.npc.NPC(self, cstring=npc["appearance"], home=npc["home"], npc=npc))
+            break
+
+  def travel(self, dest):
+    mono.no_music()
+    music.load("assets/sound/music/startload.mp3")
+    music.play(1)
+    music.queue("assets/sound/music/loading.mp3", loops=-1)
+    self.loadingScreen.update("Saving Time...")
+
+    self.key_points[self.time+2] = self.get_copy()
+
+    self.time = int(dest)
+  
+    while self.key_points[self.time + 2] == None:
+      self.time -= 1
+    self.level = copy.deepcopy(self.key_points[self.time + 2])
+    for i in range(self.time+3, len(self.key_points)):
+      self.key_points[i] = None
+    for y in range(self.time, int(dest)):
+      if y % 3 == 0:
+        self.loadingScreen.update("Travelating...", timeText=str(y))
+      self.move_forwards_year()
+      if self.time % 100 == 0:
+        self.key_points[self.time+2] = self.get_copy()
+    if int(dest) > 0:
+      self.loadingScreen.update("Travelating...", timeText=dest)
+    
+    
+    self.load_npcs()
+    self.skipRenderFrame = True
+
+    for i in range(20):
       time.sleep(0.1)
       self.loadingScreen.update("Traveling...")
     music.fadeout(10000)
+    self.clock.tick(30)
+    mono.yes_music()
 
   def deconstruct_house(self, x, y):
     if self.get_at(x, y) | engine.blocks.HOUSE0000:
@@ -344,7 +402,7 @@ class World:
   
   def make_tree(self, x):
     if not self.landing_site_x <= x <= self.landing_site_x + 3:
-      y = self.get_surface_level(x, self.surface)
+      y = self.get_surface_level(x)
       if self.get_at(x, y+1) not in engine.blocks.TREEABLE:
         return
       can_place = True
@@ -357,7 +415,7 @@ class World:
       is_near_tree = False
       for dx in range(-4, 5):
         if 0 <= (x + dx) < (constants.WORLDWIDTH - 1):
-          if self.get_at(dx + x, self.get_surface_level(x, self.surface)-1) | engine.blocks.TREE:
+          if self.get_at(dx + x, self.get_surface_level(x)-1) | engine.blocks.TREE:
             return
       theight = random.randint(5, min(max(y // 2, 10), y))
       for i in range(theight):
@@ -382,7 +440,7 @@ class World:
         home_x = npc["home"] - 3
         height = []
         for x in range(8):
-          height.append(self.get_surface_level(x + home_x, self.surface))
+          height.append(self.get_surface_level(x + home_x))
         home_y = max(set(height), key=height.count)
 
         self.deconstruct_house(home_x, home_y)
@@ -391,7 +449,7 @@ class World:
         home_x = npc["home"] - 3
         height = []
         for x in range(8):
-          height.append(self.get_surface_level(x + home_x, self.surface))
+          height.append(self.get_surface_level(x + home_x))
         home_y = max(set(height), key=height.count)
         
         upgrade_year = self.time - npc["upgrade_time"]
@@ -403,7 +461,7 @@ class World:
         home_x = npc["home"] - 3
         height = []
         for x in range(8):
-          height.append(self.get_surface_level(x + home_x, self.surface))
+          height.append(self.get_surface_level(x + home_x))
         home_y = max(set(height), key=height.count)
         
         for x in range(10):

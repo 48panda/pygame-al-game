@@ -10,6 +10,9 @@ class Blockstateless:
   def __or__(self, other):
     return self.block == other.block
   
+  def __xor__(self, other):
+    return self.block != other.block
+    
   def __str__(self):
     return f"<{self.block}>"
   __repr__ = __str__
@@ -28,8 +31,11 @@ class Blockstate:
   
   def __or__(self, other):
     return self.block == other.block
+  
+  def __xor__(self, other):
+    return self.block != other.block
 
-NUM_BLOCKS = 12
+NUM_BLOCKS = 16
 
 class blockGroup:
   def __init__(self, *blocks):
@@ -48,11 +54,15 @@ allBlockStates = (
   blockstate(4, 11),
   Blockstateless(5),
   Blockstateless(6), 
-  blockstate(7, 22), 
+  blockstate(7, 8), 
   Blockstateless(8), 
   Blockstateless(9), 
   Blockstateless(10),
-  Blockstateless(11)
+  Blockstateless(11),
+  Blockstateless(12),
+  Blockstateless(13),
+  Blockstateless(14),
+  Blockstateless(15),
 )
 
 AIR = allBlockStates[0]
@@ -74,6 +84,10 @@ DESK = allBlockStates[8]
 BILLBOARD = allBlockStates[9]
 RADIANITE = allBlockStates[10]
 STONE = allBlockStates[11]
+PLANKS = allBlockStates[12]
+SAND = allBlockStates[13]
+SANDSTONE = allBlockStates[14]
+STONEBRICKS = allBlockStates[15]
 
 UPGRADE_YEARS = {0:HOUSE0000,450:HOUSE0450,793:HOUSE0793,1066:HOUSE1066,1485:HOUSE1485,1603:HOUSE1603,1837:HOUSE1837,1902:HOUSE1902}
 
@@ -102,20 +116,22 @@ def log_update(state, down, set_at, x, y, drop, **_):
   if not (down in COLLIDE or down | TREE):
     set_at(x, y, AIR, drop=drop)
 
-UPDATE = (nothing, nothing, nothing, log_update, leaf_update, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
-TO_ITEM = (None, engine.items.DIRT, None, engine.items.TREE, None, engine.items.OBSIDIAN, None, None, None, None, engine.items.RADIANITE_ORE, engine.items.STONE)
-TILE = (None, None, None, engine.tiles.TREE, engine.tiles.LEAVES, engine.tiles.OBSIDIAN, engine.tiles.BEDROCK, None, None, None, engine.tiles.RADIANITE, engine.tiles.STONE)
+UPDATE = (nothing, nothing, nothing, log_update, leaf_update, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+TO_ITEM = (None, engine.items.DIRT, None, engine.items.TREE, None, engine.items.OBSIDIAN, None, None, None, None, engine.items.RADIANITE_ORE, engine.items.STONE,
+  engine.items.PLANKS, engine.items.SAND, engine.items.SANDSTONE, engine.items.STONEBRICKS)
+TILE = (None, None, None, engine.tiles.TREE, engine.tiles.LEAVES, engine.tiles.OBSIDIAN, engine.tiles.BEDROCK, None, None, None, engine.tiles.RADIANITE, engine.tiles.STONE, engine.tiles.PLANKS,
+        engine.tiles.SAND, engine.tiles.SANDSTONE, engine.tiles.STONEBRICKS)
 
-BUILDING = (None, None, engine.buildings.SHIP, None, None, None, None, None, engine.buildings.DESK, engine.buildings.BILLBOARD, None, None)
+BUILDING = (None, None, engine.buildings.SHIP, None, None, None, None, None, engine.buildings.DESK, engine.buildings.BILLBOARD, None, None, None, None, None, None)
 
-MINEABLE_PICKAXE = blockGroup(DIRT, TREE, LEAVES, OBSIDIAN, RADIANITE, STONE)
+MINEABLE_PICKAXE = blockGroup(DIRT, TREE, LEAVES, OBSIDIAN, RADIANITE, STONE, PLANKS, SAND, SANDSTONE, STONEBRICKS)
 REPLACEABLE = blockGroup(AIR, LEAVES)
 WALKABLE = blockGroup(AIR, SHIP, TREE, LEAVES, HOUSE0000, DESK)
-COLLIDE = blockGroup(DIRT, OBSIDIAN, BEDROCK, RADIANITE, STONE)
-USE_TILE_RENDERER = blockGroup(STONE, TREE, LEAVES, OBSIDIAN, BEDROCK, RADIANITE)
+COLLIDE = blockGroup(DIRT, OBSIDIAN, BEDROCK, RADIANITE, STONE, PLANKS, SAND, SANDSTONE, STONEBRICKS)
+USE_TILE_RENDERER = blockGroup(STONE, TREE, LEAVES, OBSIDIAN, BEDROCK, RADIANITE,
+ PLANKS, SAND, SANDSTONE, STONEBRICKS)
 TREEABLE = blockGroup(DIRT)
 CANT_MINE_BLOCK_BELOW = blockGroup(HOUSE0000, DESK)
 
 USE_BUILDING_RENDERER = blockGroup(SHIP, DESK, BILLBOARD)
-
-PLACE_MAP = (None, DIRT, None, None, OBSIDIAN, None, STONE)
+PLACE_MAP = (None, DIRT, None, None, OBSIDIAN, None, STONE, None, PLANKS, SAND, SANDSTONE, STONEBRICKS)

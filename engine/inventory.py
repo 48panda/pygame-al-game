@@ -24,10 +24,12 @@ SELECTED = pygame.image.load("assets/gui/selectedslot.png").convert_alpha()
 SWAP = pygame.image.load("assets/gui/swapslot.png").convert_alpha()
 
 FONT = pygame.font.SysFont("Calibri", 20, bold=True)
+TOOLTIP_FONT = pygame.font.Font("assets/fonts/Montserrat-Regular.ttf", 24, bold=True)
 
 class Inventory:
-  def __init__(self, items, player, game):
-    self.items = items + [[0,0] for _ in range(40-len(items))]
+  def __init__(self, items, player, game ,hasBeenLoaded=False):
+    if not hasBeenLoaded:
+      self.items = items + [[0,0] for _ in range(40-len(items))]
     self.player = player
     self.game = game
     self.hotbar_sprites = [engine.items.Item(SLOT_POSITIONS_CENTER[i]) for i in range(10)]
@@ -52,7 +54,14 @@ class Inventory:
       i.setSprite(0)
       i.update()
     self.update_craftable()
-    
+  
+  def __getstate__(self):
+    return (1, self.items)
+  
+  def __setstate__(self, state):
+    if state[0] == 1:
+      _, self.items = state
+
   def get_slot(self, slot):
     return self.items[slot][0]
   
@@ -159,7 +168,17 @@ class Inventory:
             tx, ty = pos
             text = FONT.render(str(rec[j][1]), True, c)
             self.game.nozoom.blit(text, (tx+20-text.get_width(), ty))
-    else:
+      mouse = pygame.mouse.get_pos()
+      hover = -1
+      for i, r in enumerate(SLOT_RECTS):
+        if r.collidepoint(mouse):
+          hover = i
+      for i, r in enumerate(INV_RECTS):
+        if r.collidepoint(mouse):
+          hover = i + 10
+      if hover != -1:
+        self.show_tooltip(hover, mouse)
+    else: #NOT SHOWALL
       for i, pos in enumerate(SLOT_POSITIONS):
         if i == self.selected:
           self.game.nozoom.blit(SELECTED, pos)
@@ -175,7 +194,22 @@ class Inventory:
           tx, ty = pos
           text = FONT.render(str(self.items[i][1]), True, c)
           self.game.nozoom.blit(text, (tx+20-text.get_width(), ty))
+      mouse = pygame.mouse.get_pos()
+      hover = -1
+      for i, r in enumerate(SLOT_RECTS):
+        if r.collidepoint(mouse):
+          hover = i
+      if hover != -1:
+        self.show_tooltip(hover, mouse)
   
+  def show_tooltip(self, indx, mouse):
+    item = self.items[indx]
+    meta = engine.items.ITEM_METADATA[item[0]]
+    if meta[engine.items.META_SHOW_TOOLTIP]:
+      img = TOOLTIP_FONT.render(meta[engine.items.META_TOOLTIP_TEXT], True, (0,255,255), (0,0,255))
+      self.game.nozoom.blit(img, img.get_rect(bottomleft=mouse).topleft)
+
+
   def update(self):
     for i in range(10):
       self.hotbar_sprites[i].setSprite(self.items[i][0])
@@ -253,11 +287,12 @@ class Inventory:
         if self.showall:
           for i in range(10):
             if CRAFTING_RECTS_TALL[i].collidepoint(*event.pos):
-              for j in range(1,4):
-                if self.recipes[i][j] is not None:
-                  self.remove(self.recipes[i][j][0], self.recipes[i][j][1], False)
-              self.give(self.recipes[i][0][0], self.recipes[i][0][1])
-              return True
+              if len(self.recipes) > i:
+                for j in range(1,4):
+                  if self.recipes[i][j] is not None:
+                    self.remove(self.recipes[i][j][0], self.recipes[i][j][1], False)
+                self.give(self.recipes[i][0][0], self.recipes[i][0][1])
+                return True
           else:
             if self.swap == -1:
               for i, r in enumerate(SLOT_RECTS):

@@ -96,12 +96,15 @@ class LinearSpeech:
     self.speech = speech
     self.text = []
   
-  def add(self, textlist, color):
+  def add(self, textlist, color, speaker="Icarus"):
     for i in textlist:
       if type(i) == str:
-        self.text.append((i, color, "Icarus"))
+        self.text.append((i, color, speaker))
       else:
-        self.text.append((i[1], color, i[0]))
+        if len(i) == 2:
+          self.text.append((i[1], color, i[0]))
+        if len(i) == 3:
+          self.text.append((i[1],i[2],i[0]))
     if self.speech.hidden and len(self.text):
       text = self.text.pop(0)
       self.speech.show(text[0], None, text[1], text[2])

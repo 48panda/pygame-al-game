@@ -1,5 +1,7 @@
 import engine.character as character
 import random
+import pygame
+import constants
 
 class NPC(character.Character):
   player = False
@@ -11,7 +13,7 @@ class NPC(character.Character):
     self.direction = "still"
     self.time = 10
     self.x = self.homex
-    self.y = self.world.get_surface_level(self.x, self.world.surface)
+    self.y = self.world.get_surface_level(self.x)
     self.last_x = self.x+1
     self.last_y = self.y+1
     self.last_dir = self.direction
@@ -54,3 +56,30 @@ class NPC(character.Character):
   def update2(self):
     self.pos = self.x * 16 - self.world.scrollx, self.y * 16 - self.world.scrolly
     self.update(callupdate=False)
+  
+  def event(self, event):
+    if event.type == pygame.MOUSEBUTTONDOWN:
+      if event.button == 1:
+        tile_x = self.world.scrollx//16
+        tile_y = self.world.scrolly//16
+        offset_x = -(self.world.scrollx%16)
+        offset_y = -(self.world.scrolly%16)
+        blockx, blocky = self.world.game.unzoompoint(*event.pos)
+        distance = ((self.world.player.x - self.x)**2 + (self.world.player.y - self.y)**2)**0.5
+        if distance > 10:
+          return False
+        if self.rect.collidepoint(blockx, blocky):
+          has_special = False
+          if "special_dialog" in self.npc:
+            for dialog in self.npc["special_dialog"]:
+              if dialog["year"] == self.world.time and dialog["quest_id"] == self.world.book.quest_id:
+                has_special = True
+                self.world.book.linearSpeech.add(dialog["interaction"], (255, 255, 255), speaker=self.npc["name"])
+                if dialog["completes_quest"]:
+                  self.world.book.next_quest()
+          if not has_special:
+            message = ""
+            for i in constants.CHAT_DATA["greeting"]:
+              message += random.choice(i)
+            self.world.book.linearSpeech.add([message], (255, 255, 255), speaker=self.npc["name"])
+            

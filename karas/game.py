@@ -3,9 +3,11 @@ from karas.types import Enums
 from karas.types import QuitTriggered
 from karas.sprite import Sprite
 import karas.keypad
+import constants
+import theas
 
 class Game:
-  def __init__(self,window_size = None, exit_key = pygame.K_ESCAPE, color = (255, 255, 255)):
+  def __init__(self, clock,savename, window_size = None, exit_key = pygame.K_ESCAPE, color = (255, 255, 255), hasBeenLoaded=False):
     pygame.init()
     size = (1920,1080)
     if type(window_size) == tuple:
@@ -15,17 +17,32 @@ class Game:
     self.game = pygame.display.set_mode(size)#, flags)
     self.exit_key = exit_key
     self.color = color
+    self.clock = clock
     self.zoom = pygame.surface.Surface([1920, 1080])
     self.nozoom = pygame.surface.Surface([1920, 1080], pygame.SRCALPHA)
     self.zoompos = (1920//2, 1080//2)
     self.zoomamount = 1
     self.actualzoom = (0,0)
     self.keypad = karas.keypad.Keypad(self.nozoom)
-    self.world = None
+    self.loadingScreen = None
+    self.exit_to_title = False
+    self.savename = savename
+    if not hasBeenLoaded:
+      self.world = None
+  
+  def __getstate__(self):
+    return (1,self.world)
+  
+  def __setstate__(self, state):
+    if state[0] == 1:
+      _, self.world = state
   
   def assign_world(self, world):
     self.world = world
     self.keypad.world = world
+
+  def assign_loading_screen(self, loadingScreen):
+    self.loadingScreen = loadingScreen
 
   def quit(self):
     pygame.quit()
@@ -38,8 +55,13 @@ class Game:
       return True
     if event.type == pygame.KEYDOWN:
       if event.key == self.exit_key:
-        self.quit()
-        return True
+        action = theas.esc.do_esc_screen(self.game, self.clock, self.loadingScreen)
+        if action == "cont":
+          return True
+        elif action == "save":
+          theas.saver.save(self)
+          self.exit_to_title = True
+          return True
       if event.key == pygame.K_i:
         self.zoomamount += 0.1
         self.zoomamount = max(min(self.zoomamount, 4), 1)

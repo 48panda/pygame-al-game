@@ -1,8 +1,6 @@
 import pygame
 import karas
 import math
-import PIL
-from PIL import Image
 from zipfile import ZipFile
 import io
 
@@ -72,11 +70,15 @@ class Color:
   def get(self):
     return (self.r, self.g, self.b, 255)
   
+  def rgb(self, rgb):
+    self.r , self.g, self.b = rgb
+  
   def __str__(self):
     return hex(self.r)[2:].zfill(2) + hex(self.g)[2:].zfill(2) + hex(self.b)[2:].zfill(2)
 
 MALE_HAIR = [1,3]
 FEMALE_HAIR = [2]
+MAX_HAIR = 3
 MAX_TOP = 3
 
 EYE_COLORS = [(99,78,52), (46,83,111), (61,103,29), (28,120,71), (73,118,101)]
@@ -87,10 +89,10 @@ class CharacterCreationValues:
   def __init__(self, string = None):
     self.hair = 3
     self.top = 1
-    self.eyecolor = Color(0, 0, 0)
+    self.eyecolor = Color(*EYE_COLORS[0])
     self.topcolor = Color(0, 255, 0)
-    self.haircolor = Color(255, 0, 255)
-    self.skincolor = Color(200,200,200)
+    self.haircolor = Color(*HAIR_COLORS[0])
+    self.skincolor = Color(*SKIN_COLORS[0])
     self.legcolor = Color(0,0,255)
     if string:
       version = string[0]
@@ -129,12 +131,16 @@ class Character(karas.sprite.Sprite):
   num_sprites = 4
   player = False
   clockcycle = 10
-  def __init__(self, world, *args, cstring=None, **kwargs):
+  def __init__(self, world, *args, cstring=None, hasBeenLoaded=False,  **kwargs):
     self.world = world
-    super().__init__(*args, **kwargs)
-    self.x = 100
-    self.y = 40
-    c = CharacterCreationValues(string=cstring)
+    super().__init__(*args, hasBeenLoaded=hasBeenLoaded, **kwargs)
+    if not hasBeenLoaded:
+      self.x = 100
+      self.y = 40
+      self.cstring=cstring
+    #print(hasBeenLoaded)
+    #print(self.cstring)
+    c = CharacterCreationValues(string=self.cstring)
     self.fromSpriteSheet(c.getImage())
     self.vx = 0
     self.vy = 0

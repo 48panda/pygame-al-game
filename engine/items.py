@@ -10,13 +10,35 @@ OBSIDIAN = 4
 RADIANITE_ORE = 5
 STONE = 6
 RADIANITE_INGOT = 7
+PLANKS = 8
+SAND = 9
+SANDSTONE = 10
+STONEBRICKS = 11
 
-PLACABLE = [DIRT, OBSIDIAN, STONE]
+META_SHOW_TOOLTIP = 0
+META_TOOLTIP_TEXT = 1
+
+ITEM_METADATA = (    #SHOW_TOOLTIP, TOOLTIP_TEXT
+                    (False       , ""               ), # BLANK
+                    (True        , "Dirt"           ), # DIRT
+                    (True        , "Pickaxe"        ), # WOODEN_PICKAXE
+                    (True        , "Log"            ), # TREE
+                    (True        , "Obsidian"       ), # OBSIDIAN
+                    (True        , "Radianite Ore"  ), # RADIANITE_ORE
+                    (True        , "Stone"          ), # STONE
+                    (True        , "Radianite Ingot"), # RADIANITE_INGOT
+                    (True        , "Wooden Planks"  ), # PLANKS
+                    (True        , "Sand"           ), # SAND
+                    (True        , "Sandstone"      ), # SANDSTONE
+                    (True        , "Stone Bricks"   ), # STONEBRICKS
+)
+
+PLACABLE = [DIRT, OBSIDIAN, STONE, PLANKS, SAND, SANDSTONE, STONEBRICKS]
 PICKAXES = [WOODEN_PICKAXE]
 
 SPRITESHEET = pygame.transform.scale(ITEMS_IMG, (ITEMS_IMG.get_size()[0]*2, ITEMS_IMG.get_size()[1]*2))
 
-NUM_SPRITES = 8
+NUM_SPRITES = 12
 
 class Item(karas.sprite.Sprite):
   spritesheet = True

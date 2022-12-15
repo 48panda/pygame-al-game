@@ -1,0 +1,20 @@
+{
+  "greeting": [
+    [
+      "Hi, ",
+      "Good Morning, ",
+      "Good Afternoon, ",
+      "Good Evening, ",
+      "Hello, ",
+      "Sup, "
+    ],
+    [
+      "How are you?",
+      "How is your day?",
+      "Having a good day?",
+      "It's nice to meet you!",
+      "I've heard lots about you!",
+      "Welcome to our town!"
+    ]
+  ]
+}

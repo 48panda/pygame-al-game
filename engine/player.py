@@ -5,8 +5,11 @@ import pygame
 
 class Player(engine.character.Character):
   player = True
-  def init(self):
-    self.inventory = engine.inventory.Inventory([[engine.items.WOODEN_PICKAXE, 1], [engine.items.OBSIDIAN, 16]], self, self.world.game)
+  def init(self, hasBeenLoaded=False):
+    if not hasBeenLoaded:
+      self.inventory = engine.inventory.Inventory([[engine.items.WOODEN_PICKAXE, 1], [engine.items.OBSIDIAN, 16]], self, self.world.game)
+    else:
+      self.inventory.__init__([[engine.items.WOODEN_PICKAXE, 1], [engine.items.OBSIDIAN, 16]], self, self.world.game, hasBeenLoaded=True)
     self.left = False
     self.right = False
   def render(self):
@@ -20,6 +23,16 @@ class Player(engine.character.Character):
       self.flipped = True
     super().onupdate()
     self.inventory.update()
+  
+  def __getstate__(self):
+    #print("write", (1, self.inventory, self.cstring, self.x, self.y, "test"))
+    return (1, self.inventory, self.cstring, self.x, self.y)
+  
+  def __setstate__(self, state):
+    if state[0] == 1:
+      _, self.inventory, self.cstring, self.x, self.y = state
+      #print("read", state)
+
   def event(self, event):
     if self.inventory.event(event): return True
     if event.type == pygame.KEYDOWN:

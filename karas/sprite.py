@@ -11,8 +11,9 @@ class Sprite(pygame.sprite.Sprite):
   spritewidth = 0
   spriteheight = 0
   num_sprites = 0
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args,rectoffset=(0,0), **kwargs):
     self.rect = pygame.Rect(0,0,0,0)
+    self.rectoffset = rectoffset
     super().__init__()
     self.im = pygame.Surface([self.width, self.height])
     self.hoverim = pygame.Surface([self.width, self.height])
@@ -41,9 +42,9 @@ class Sprite(pygame.sprite.Sprite):
         self.im = self.sprites[num]
       else:
         self.im = self.flippedsprites[num]
-  def postupdate(self):
+  def postupdate(self, *args, **kwargs):
     pass
-  def init(self):
+  def init(self, *args, **kwargs):
     pass
   
   def update(self, *args, callupdate=True, **kwargs):
@@ -64,7 +65,7 @@ class Sprite(pygame.sprite.Sprite):
     else:
       self.rect.center = self.pos
     if self.hover:
-      if self.rect.collidepoint(pygame.mouse.get_pos()):
+      if self.rect.collidepoint((pygame.mouse.get_pos()[0] - self.rectoffset[0], pygame.mouse.get_pos()[1] - self.rectoffset[1])):
         self.image = self.hoverim
       else:
         self.image = self.im
@@ -83,16 +84,18 @@ class Group(pygame.sprite.Group):
 
 class Button(Sprite):
   hover = True
-  def init(self, text, color, pos=(100, 100), border_radius=5,padding=10, size=40, darker_text=False, darker_hover=False):
-    font = pygame.font.SysFont("Ariel", size)
+  bottomLeftAligned = True
+  def init(self, text, color, pos=(100, 100), border_radius=5,padding=10, size=40, darker_text=False, darker_hover=False, font=None, text_color=None, onClick=None):
+    font = font or pygame.font.SysFont("Ariel", size)
+    self.onclick = onClick
     if darker_text:
-      text_color = karas.utils.darken_color(*color, factor = 0.5)
+      text_color = text_color or karas.utils.darken_color(*color, factor = 0.5)
     else:
-      text_color = karas.utils.lighten_color(*color, factor = 0.5)
+      text_color = text_color or karas.utils.lighten_color(*color, factor = 0.5)
     text_surface = font.render(text, True, text_color)
     padded_text = pygame.rect.Rect(0, 0, text_surface.get_width() + padding*2, text_surface.get_height() + padding*2)
     padded_surface = pygame.Surface(padded_text.size, pygame.SRCALPHA)
-    padded_surface.fill((255,255,255,255))
+    padded_surface.fill((255,255,255,0))
     karas.utils.draw_rounded_rect(padded_surface, padded_text, color, border_radius)
     padded_surface.blit(text_surface, (padding, padding))
     self.im = padded_surface
@@ -109,12 +112,20 @@ class Button(Sprite):
     text = font.render(text, True, text_color)
     padded_text = pygame.rect.Rect(0, 0, text.get_width() + padding*2, text.get_height() + padding*2)
     padded_surface = pygame.Surface(padded_text.size, pygame.SRCALPHA)
-    padded_surface.fill((255,255,255,255))
+    padded_surface.fill((255,255,255,0))
     karas.utils.draw_rounded_rect(padded_surface, padded_text, color, border_radius)
     padded_surface.blit(text, (padding, padding))
     self.hoverim = padded_surface
 
     self.pos = pos
+  
+  def event(self, event):
+    if event.type == pygame.MOUSEBUTTONDOWN:
+      if event.button == 1:
+        if self.rect.collidepoint((event.pos[0] - self.rectoffset[0], event.pos[1] - self.rectoffset[1])):
+          if self.onclick:
+            self.onclick()
+          return True
 
 
 class TransparentButton(Sprite):

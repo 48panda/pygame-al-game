@@ -6,6 +6,7 @@ import time
 import saras.easing
 import random
 import constants
+import mono
 
 #em_appearance = engine.character.CharacterCreationValues()
 #em_appearance.eyecolor = engine.character.Color(*engine.character.EYE_COLORS[2])
@@ -36,10 +37,11 @@ class AsteroidSprite(pygame.sprite.Sprite):
     if self.y - self.size > 1080:
       self.kill()
 
-def play_opening_cutscene(loadingScreen, player_appearance):
-  game = karas.game.Game()
+def play_opening_cutscene(loadingScreen, player_appearance, clock):
+  game = karas.game.Game(clock, None)
+  mono.no_music() # Want custom music
   pygame.mixer_music.load("assets/sound/music/cutscene.mp3")
-  world = engine.world.World(game, 0, loadingScreen, cutscene=True)
+  world = engine.world.World(game, 0, loadingScreen, clock, cutscene=True)
   with open("assets/cutscene/level.txt", "r") as f:
     for line in f.readlines():
       row = []
@@ -52,6 +54,14 @@ def play_opening_cutscene(loadingScreen, player_appearance):
           block = engine.blocks.DESK
         if c == "B":
           block = engine.blocks.BILLBOARD
+        if c == "t":
+          block = engine.blocks.TREE
+        if c == "l":
+          block = engine.blocks.LEAVES
+        if c == "b":
+          block = engine.blocks.STONEBRICKS
+        if c == "s":
+          block = engine.blocks.SANDSTONE
         row.append(block)
       world.level.append(row)
   clock = pygame.time.Clock()
@@ -87,7 +97,7 @@ def play_opening_cutscene(loadingScreen, player_appearance):
     prev_time = time_in
     time_in += time_passed
 
-    t = 91
+    t = 92
 
     # Events here
     if prev_time < 4 <= time_in:
@@ -118,7 +128,8 @@ def play_opening_cutscene(loadingScreen, player_appearance):
       scroll_x.ease_to(70, 6)
       zoom.ease_to(1, 1)
       player.x = -100
-    elif prev_time < t <= time_in:
+    elif prev_time < t - 1 <= time_in: # Wait the rocket launches when the countdown says 1??
+                                       # Yes, but the easing function is very slow for the first second.
       rocketpos.ease_to((0, -20), 10)
       cameraPos.ease_to((10, 30), 10)
       zoom.ease_to(3, 10)
@@ -150,7 +161,7 @@ def play_opening_cutscene(loadingScreen, player_appearance):
     npcs.draw(game.zoom)
     pos = rocketpos()
     pos = (pos[0] + 135, pos[1] + 22)
-    if t <= time_in:
+    if t -1 <= time_in:
       if time_in % 0.3 > 0.2:
         game.zoom.blit(rocket2, (pos[0] * 16 - world.scrollx, pos[1] * 16 - world.scrolly))
       if time_in % 0.3 < 0.1:

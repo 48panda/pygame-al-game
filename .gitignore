@@ -5,4 +5,8 @@ dist
 build
 *.zip
 v*.*/
+v*/
 special.json
+todo.txt
+data/
+name.py
