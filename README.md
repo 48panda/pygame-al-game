@@ -8,7 +8,12 @@ It is inspired by block games like Minecraft and Terraria, however the art style
 
 # Downloading
 
-You can download the game from the releases tab on the right. To run the game from it's source, you just need to install pygame and run main.py while in the root directory of the project.
+You can download the game from the releases tab on the right.  
+To run the game from it's source, you just need to install pygame and run main.py while in the root directory of the project. It has only been tested on 3.8.10 although there's no reason it won't run on other versions.
+
+# Compiling
+
+To compile, run `setup.py build` in the root of the project. A zip file called `game.zip will be made.`
 
 # About
 
