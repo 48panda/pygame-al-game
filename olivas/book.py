@@ -10,10 +10,12 @@ import pygame
 import constants
 import gzip
 
+# get a random color
 def randomColor():
   c = colour.hsl2rgb((random.random(), random.uniform(0.5, 1), random.uniform(0.5, 0.75)))
   return (int(c[0]*255),int(c[1]*255),int(c[2]*255))
 
+# create a random appearence for a gender (gender is random, only determines this and name)
 def createRandomAppearance(gender):
   if gender == "male":
     hair = random.choice(engine.character.MALE_HAIR)
@@ -24,19 +26,22 @@ def createRandomAppearance(gender):
   appearance.top = top
   appearance.hair = hair
   appearance.eyecolor = engine.character.Color(*random.choice(engine.character.EYE_COLORS))
-  appearance.haircolor = engine.character.Color(*random.choice(engine.character.HAIR_COLORS))
-  appearance.skincolor = engine.character.Color(*random.choice(engine.character.SKIN_COLORS))
+  appearance.haircolour = engine.character.Color(*random.choice(engine.character.HAIR_COLORS))
+  appearance.skincolour = engine.character.Color(*random.choice(engine.character.SKIN_COLORS))
   appearance.topcolor = engine.character.Color(*randomColor())
   appearance.legcolor = engine.character.Color(*randomColor())
   return appearance
 
+# Load images for phone
 PHONE = pygame.image.load("assets/gui/phone.png").convert_alpha()
 TAB = pygame.image.load("assets/gui/tab.png").convert()
 TAB_SELECTED = pygame.image.load("assets/gui/tab_selected.png").convert()
 TAB_LABELS = pygame.image.load("assets/gui/tab_icons.png").convert_alpha()
 
+# List of all NPCs
 class NPCIndex:
   def __init__(self):
+    # Load NPCs from json or gzon (to stop people accidentally seeing spoilers)
     if os.path.exists("assets\\special.json"):
       with open("assets\\special.json") as f:
         self.npcs = json.load(f)["npcs"]
@@ -47,6 +52,7 @@ class NPCIndex:
       else:
         self.npcs = []
   def generateYearsForNPCs(self, seed, homex):
+    # Generate all NPC properties
     random.seed(seed)
     for n in self.npcs:
       if not "appearance" in n:
@@ -93,14 +99,14 @@ class NPCIndex:
         does_upgrade = bool(random.getrandbits(1))
         upgrade_time = random.randint(1, 10)
         self.npcs.append({"name": name, "gender": gender, "born": year, "died": min(2172, year + age), "appearance": str(appearance), "home": home, "does_upgrade": does_upgrade, "upgrade_time": upgrade_time})
-
-  def createNPCs(self, world, loadingScreen):
+  # 
+  def createNPCs(self, world, loadingScreen): # Not sure how useful this is but something probably needs it
     self.sprites = []
     total = len(self.npcs)
     for i, npc in enumerate(self.npcs):
       self.sprites.append(None)
     return pygame.sprite.Group()
-
+# load images and fonts more
 TL_GUI = pygame.image.load("assets/gui/topleft.png").convert()
 TL_GUI_FONT = pygame.font.SysFont("Calibri", 16)
 
@@ -109,6 +115,7 @@ class GuideBook: # Aka the temporal phone and the quest thing in the top right
     self.quests = []
     self.game = game
     self.linearSpeech = linearSpeech
+    # quests
     self.quests.append(olivas.quests.Quest(self, "tutorial-1",
      "Find 10 Radianite Ore",
      "Radianite is a rare ore found underground. It is a bright orange color.",
@@ -143,6 +150,7 @@ class GuideBook: # Aka the temporal phone and the quest thing in the top right
           start_dialog=["Well then, off we go to 1125!"],
           end_dialog=["Great! Why don't you try and work out the puzzle.", ("TIP", "You can press the Windows button or ALT+TAB to access your browser if you don't happen to know these very specific facts", (255,255,0)),
           ("NOTICE", "As of v1a, The storyline ends here.", (255,0,0))]))
+    # initialise constants
     self.finished = False
     self.phone_open = False
     if not hasBeenLoaded:
@@ -165,6 +173,7 @@ class GuideBook: # Aka the temporal phone and the quest thing in the top right
       self.notes_image = pygame.image.load(self.notes_image_path).convert()    
   
   def next_quest(self, skip_ending=False):
+    # go to next quest or finished state if finished
     if not self.finished:
       if not skip_ending:
         self.quests[self.quest_index].finish()
@@ -177,6 +186,7 @@ class GuideBook: # Aka the temporal phone and the quest thing in the top right
         self.quest_id = "finished"
 
   def update(self):
+    #go to next quest if needed
     if not self.finished:
       if self.quest_index == -1 or (constants.SKIP_TUTORIAL and self.quest_index < 3):
         self.next_quest(skip_ending = True)
@@ -185,12 +195,14 @@ class GuideBook: # Aka the temporal phone and the quest thing in the top right
         self.next_quest()
 
   def event(self, event):
+    # open phone (press G, not used in game yet but still exists)
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_g:
         self.phone_open = not self.phone_open
         return True
       
   def render(self, screen):
+    # draw the thing in the top left
     screen.blit(TL_GUI, (0,0))
     time = str(self.game.world.time)
     if time == "-1":
