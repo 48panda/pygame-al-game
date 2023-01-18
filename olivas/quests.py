@@ -1,3 +1,4 @@
+# Class to describe a quest
 class Quest:
   def __init__(self,guidebook,  my_id, name, desc, complete_func, start_dialog=[], end_dialog=[], toComplete=1,endFunc=None):
     self.id = my_id

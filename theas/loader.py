@@ -2,6 +2,7 @@ import pygame
 
 pygame.font.init()
 
+# Simple loading screen Pumps events in times of heavy computing need
 class LoadingScreen:
   def __init__(self, screen, text="Booting..."):
     self.text = text
@@ -23,4 +24,4 @@ class LoadingScreen:
     r.center = self.screen.get_rect().center
     self.screen.blit(txt, r.topleft)
     pygame.display.update()
-    pygame.event.get()
+    pygame.event.pump()

@@ -1,6 +1,8 @@
 import engine.character as character
 import random
 
+# NPC that moves from go_left and go_right functions
+
 class NPC(character.Character):
   player = False
   clockcycle = 30

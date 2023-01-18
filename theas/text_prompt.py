@@ -3,6 +3,8 @@ import karas
 import pygame
 import mono
 
+# Asks user for a save name
+
 def prompt_text(screen, text, clock):
   done = False
   action = None

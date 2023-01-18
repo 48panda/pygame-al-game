@@ -14,32 +14,36 @@ class ColorPicker:
     self.held_slider = -1
     self.mouse_rel = 0
     self.circles = []
-    self.color = pygame.Color(0)
+    self.colour = pygame.Color(0)
     if default or presets:
       self.hue, self.saturation, self.lightness = default or rgbToHsl(random.choice(presets))
     self.presets = {c:(pygame.Rect(i*30+50,15,20,20)) for i, c in enumerate(presets)}
 
   def draw_bar(self, surf, vary, varyamount, height=25):
-    color = [self.hue, self.saturation ,self.lightness, 100]
+    # Draws one of those bars on the color picker where every pixel is a different color.
+    colour = [self.hue, self.saturation ,self.lightness, 100]
     c = pygame.Color(0,0,0,0)
     for x in range(50,350):
       val = int((varyamount * ((x-50) / 300)))
-      color[vary] = val
-      c.hsla = color
+      colour[vary] = val
+      c.hsla = colour
       pygame.draw.rect(surf, c, (x, height-5, 1, 10))
 
   def event(self, event):
     if event.type == pygame.MOUSEBUTTONDOWN:
       for i, circle in enumerate(self.circles):
+        # If clicked circle, set it to held and store where on the button it is held
         if ((event.pos[0] - self.pos[0] - circle[0]) ** 2 + (event.pos[1] - self.pos[1] - circle[1]) ** 2) ** 0.5 <= 10:
           self.held_slider = i
           self.mouse_rel = circle[0] - (event.pos[0] - self.pos[0])
           return True
-      for color, rect in self.presets.items():
+      # If clicked preset, set colors to preset.
+      for colour, rect in self.presets.items():
         if rect.collidepoint(event.pos[0] - self.pos[0], event.pos[1] - self.pos[1]):
-          self.hue, self.saturation, self.lightness = rgbToHsl(color)
+          self.hue, self.saturation, self.lightness = rgbToHsl(colour)
           return True
     if event.type == pygame.MOUSEBUTTONUP:
+      # No longer holding any sliders
       if self.held_slider != -1:
         self.held_slider = -1
         return True
@@ -54,27 +58,31 @@ class ColorPicker:
       self.saturation = max(0, min(100, 100*new_circle_x/300))
     if self.held_slider == 2:
       self.lightness = max(0, min(100, 100*new_circle_x/300))
-
+    # Draw bars
     surf = pygame.Surface((400, 125))
     self.draw_bar(surf, 0, 360, 50)
     self.draw_bar(surf, 1, 100, 75)
     self.draw_bar(surf, 2, 100,100)
-    self.color = pygame.Color(0)
-    self.color.hsla = [self.hue, self.saturation ,self.lightness, 100]
+    self.colour = pygame.Color(0)
+    self.colour.hsla = [self.hue, self.saturation ,self.lightness, 100]
     self.circles = []
+    # draw circles
     for i, v in enumerate([self.hue, self.saturation, self.lightness]):
       x = int(300 * v / max_val[i]) + 50
       y = i*25 + 50
-      pygame.draw.circle(surf, self.color, (x,y), 10)
+      pygame.draw.circle(surf, self.colour, (x,y), 10)
       self.circles.append((x, y))
-    for color, rect in self.presets.items():
-      pygame.draw.rect(surf, color, rect)
+    # Draw presets
+    for colour, rect in self.presets.items():
+      pygame.draw.rect(surf, colour, rect)
     return surf
   
   def __call__(self):
-    return self.color.r, self.color.g, self.color.b
+    # return the rgb colours
+    return self.colour.r, self.colour.g, self.colour.b
 
 if __name__=="__main__":
+  # Testing
   screen = pygame.display.set_mode((500,225))
   cPicker = ColorPicker((100,100))
   while True:

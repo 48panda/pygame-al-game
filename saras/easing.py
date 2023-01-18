@@ -1,3 +1,4 @@
+# A class that eases between 2 numbers, and then lots of variations of it.
 class EasingInteger:
     def __init__(self, default):
         self.value = default

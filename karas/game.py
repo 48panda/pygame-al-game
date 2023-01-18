@@ -1,5 +1,4 @@
 import pygame
-from karas.types import Enums
 from karas.types import QuitTriggered
 from karas.sprite import Sprite
 import karas.keypad
@@ -7,16 +6,18 @@ import constants
 import theas
 
 class Game:
-  def __init__(self, clock,savename, window_size = None, exit_key = pygame.K_ESCAPE, color = (255, 255, 255), hasBeenLoaded=False):
+  def __init__(self, clock,savename, window_size = None, exit_key = pygame.K_ESCAPE, colour = (255, 255, 255), hasBeenLoaded=False):
+    # Setup window
     pygame.init()
     size = (1920,1080)
     if type(window_size) == tuple:
       size = window_size
     else:
       flags = pygame.FULLSCREEN | pygame.SCALED
-    self.game = pygame.display.set_mode(size)#, flags)
+    # Initialise attributes
+    self.game = pygame.display.set_mode(size, flags)
     self.exit_key = exit_key
-    self.color = color
+    self.colour = colour
     self.clock = clock
     self.zoom = pygame.surface.Surface([1920, 1080])
     self.nozoom = pygame.surface.Surface([1920, 1080], pygame.SRCALPHA)
@@ -46,13 +47,12 @@ class Game:
 
   def quit(self):
     pygame.quit()
-    raise QuitTriggered()    
+    raise QuitTriggered() # just go straight to main.py. essentially equivalent to purposefully dropping something and catching it at the last minute instead of lowering it carefully 
   
   def event(self, event):
-    if self.keypad.event(event): return True
+    if self.keypad.event(event): return True # Relay event to keypad
     if event.type == pygame.QUIT:
       self.quit()
-      return True
     if event.type == pygame.KEYDOWN:
       if event.key == self.exit_key:
         action = theas.esc.do_esc_screen(self.game, self.clock, self.loadingScreen)
@@ -62,6 +62,7 @@ class Game:
           theas.saver.save(self)
           self.exit_to_title = True
           return True
+      # zoom
       if event.key == pygame.K_i:
         self.zoomamount += 0.1
         self.zoomamount = max(min(self.zoomamount, 4), 1)
@@ -72,10 +73,12 @@ class Game:
         return True
 
   def render(self):
+    # area to show (zoom)
     area = pygame.Rect(0, 0, 1920 // self.zoomamount, 1080 // self.zoomamount)
     area.center = self.zoompos[0], self.zoompos[1]
     if hasattr(self.world, "player"):
       area.center = self.world.player.rect.center
+    # make zoom area be inbounds
     if area.left < 0:
       area.left = 0
     if area.top < 0:
@@ -86,16 +89,19 @@ class Game:
       area.right = 1920
     self.actualzoom = area.topleft
     self.keypad.draw()
+    # zoom
     cropped = pygame.Surface(area.size)
     cropped.blit(self.zoom, (0,0), area=area)
     pygame.transform.scale(cropped, (1920, 1080), dest_surface=self.game)
-    #self.game.blit(self.zoom, (0,0))
+    # draw stuff
     self.zoom.fill((149, 255, 255))
     self.game.blit(self.nozoom, (0,0))
     self.nozoom.fill((0, 0, 0, 0))
+    # update screen
     pygame.display.update()
   
   def unzoompoint(self, x, y):
+    #screen coords to unzoomed screen coords
     tx, ty = self.actualzoom
     s = self.zoomamount
     return x/s + tx, y/s + ty

@@ -1,5 +1,6 @@
 import pygame
 
+# load images
 CIRCLE = pygame.image.load("assets/gui/circle.png").convert_alpha()
 FILLEDCIRCLE = pygame.image.load("assets/gui/filledcircle.png").convert_alpha()
 GREENCIRCLE = pygame.image.load("assets/gui/greencircle.png").convert_alpha()
@@ -9,6 +10,7 @@ FILLEDREDCIRCLE = pygame.image.load("assets/gui/filledredcircle.png").convert_al
 
 class Keypad:
   def __init__(self, surface):
+    # initialise
     self.game = surface
     self.enabled = False
     self.width = 160
@@ -27,24 +29,31 @@ class Keypad:
       self.keys[i].blit(text, r)
       self.hover_keys[i].blit(text, r)
   
+  # These seem a bit overkill in hindsight.
   def enable(self):
     self.enabled = True
 
   def disable(self):
     self.enabled = False
   
+  # If mouse if over a button
   def if_button(self, pos):
     return self.if_near(pos,pygame.mouse.get_pos(), 20)
+
   def if_near(self, pos, pos2, dist):
     return ((pos[0]-pos2[0])**2 + (pos[1]-pos2[1])**2) <= dist**2
 
   def draw(self):
     if self.enabled:
+
       r = pygame.Rect(0, 0, self.width, self.height)
       r.center = self.game.get_rect().center
+      # Draw box and outline.
       pygame.draw.rect(self.game, (0, 57, 66), r)
       pygame.draw.rect(self.game, (0, 194, 224), r, width = 2)
+      # Position
       self.pos = [(r.centerx, r.bottom - 30)]
+      # Draw keys (todo: cleanup hover detection)
       for y in range(3):
         for x in range(3):
           self.pos.append(((r.left + 30 + 50*x), (r.bottom - 50 + 20 - 50*(3-y))))
@@ -52,10 +61,13 @@ class Keypad:
             self.game.blit(self.hover_keys[1 + x + 3*y], (r.left + 10 + 50*x, r.bottom - 50 - 50*(3-y)))
           else:
             self.game.blit(self.keys[1 + x + 3*y], (r.left + 10 + 50*x, r.bottom -50 - 50*(3-y)))
+
+      # draw 0
       if (((r.centerx)-pygame.mouse.get_pos()[0])**2 + ((r.bottom - 30)-pygame.mouse.get_pos()[1])**2) <= 400:
         self.game.blit(self.hover_keys[0], (r.centerx - 20, r.bottom - 50))
       else:
         self.game.blit(self.keys[0], (r.centerx - 20, r.bottom - 50))
+      # draw enter and cancel buttons
       self.go_pos = (r.centerx - 20 + 70, r.bottom - 30)
       self.cancel_pos = (r.centerx - 20 - 30, r.bottom - 30)
       if self.if_button(self.go_pos):
@@ -67,6 +79,7 @@ class Keypad:
       else:
         self.game.blit(REDCIRCLE, (self.cancel_pos[0]-20,self.cancel_pos[1]-20))
       
+      # validate input range
       if self.dest:
         if 0 < int(self.dest) < 2150:
           text = self.font.render(self.dest, True, (0, 224, 45))
@@ -80,6 +93,7 @@ class Keypad:
   def event(self, event):
     if self.enabled:
       if event.type == pygame.MOUSEBUTTONDOWN:
+        # If clicking buttons, do what the button does
         for b in range(10):
           if self.if_near(self.pos[b],event.pos, 20):
             self.dest += str(b)
@@ -96,6 +110,7 @@ class Keypad:
           return True
       if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_ESCAPE:
+          # cancel if pressing escape
           self.dest = ""
           self.disable()
           return True

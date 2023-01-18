@@ -2,7 +2,7 @@ import pygame
 grassunder = pygame.image.load("assets/tiles/grassunder.png").convert_alpha()
 grassdark = pygame.image.load("assets/tiles/grassdark.png").convert_alpha()
 grass = pygame.image.load("assets/tiles/grass.png").convert_alpha()
-
+#Load textures
 LEAVES = pygame.image.load("assets/tiles/leaves.png").convert()
 TREE = pygame.image.load("assets/tiles/tree.png").convert()
 BEDROCK = pygame.image.load("assets/tiles/bedrock.png").convert()
@@ -19,6 +19,7 @@ STONEBRICKS = pygame.image.load("assets/tiles/stonebricks.png").convert()
 GRASS.blit(grassunder, (0,0))
 GRASS.blit(grassdark, (0,0))
 GRASS.blit(grass, (0,0))
+# Construct grass textures
 GRASS_l = pygame.image.load("assets/tiles/dirt.png").convert()
 GRASS_l.blit(grassunder, (0,0))
 GRASS_l.blit(pygame.transform.rotate(grassunder, 90), (0,0))
@@ -44,5 +45,6 @@ GRASS_b.blit(grass, (0,0))
 GRASS_b.blit(pygame.transform.rotate(grass, 90), (0,0))
 GRASS_b.blit(pygame.transform.rotate(grass, 270), (0,0))
 
+# debug texture
 BLUE = pygame.Surface((16,16))
 BLUE.fill((0,0,255))

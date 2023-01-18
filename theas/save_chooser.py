@@ -5,6 +5,7 @@ import mono
 
 smallfont = pygame.font.Font("assets/fonts/Montserrat-Regular.ttf", 30)
 
+# Button
 class Button(karas.sprite.Sprite):
   topLeftAligned = True
   hover = True
@@ -26,13 +27,6 @@ class Button(karas.sprite.Sprite):
     if self.rectoffset[0] != 0:
       self.pos = (self.p[0], self.p[1] + y_add)
       self.rectoffset = (670, 70 - scroll)
-  
-  def postupdate(self):
-    #if self.rect.collidepoint(( pygame.mouse.get_pos()[0] - self.rectoffset[0], pygame.mouse.get_pos()[1] - self.rectoffset[1])) and (pygame.mouse.get_pos()[1] > 140 or self.rectoffset[0] == 0):
-    #  self.image = self.hoverim
-    #else:
-    #  self.image = self.im
-    pass
 
   def event(self, event):
     if event.type == pygame.MOUSEBUTTONDOWN:

@@ -7,7 +7,7 @@ saves_path = "data/saves/"
 import gzip
 import pickle
 import fnmatch
-
+# Fairly self explainatory
 if not os.path.exists(saves_path):
     os.makedirs(saves_path)
 

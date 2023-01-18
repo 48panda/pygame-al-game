@@ -1,17 +1,15 @@
 import pygame
-import karas
 import engine
-import barras
 import olivas
 import constants
 import mono
+import time
 
 def run(npcs, game, loadingScreen, clock, seed, player_appearance=None, isNew=True):
   
-
-  #buttons = karas.sprite.Group(karas.sprite.Button)
-  #buttons = karas.sprite.Group(karas.sprite.TransparentButton)
-  #buttons.createNew("hello!", pos=(200, 200))
+  seed = time.time()
+  #Set the seed to the time as it is currently always a constant
+  # Initialise everything
   if isNew:
     world = engine.world.World(game, seed, loadingScreen, clock)
     npcs.generateYearsForNPCs(seed, world.landing_site_x)
@@ -58,9 +56,9 @@ def run(npcs, game, loadingScreen, clock, seed, player_appearance=None, isNew=Tr
 
   if constants.SHOW_FPS:
     font = pygame.font.SysFont("Courier", 30)
-  mono.yes_music()
+  mono.yes_music() #yes! music
   while True:
-    #buttons.update()
+    # Run every frame
     world.skipRenderFrame = False
     td = clock.tick(30) / 1000
     world.update(player)
@@ -80,8 +78,7 @@ def run(npcs, game, loadingScreen, clock, seed, player_appearance=None, isNew=Tr
     player.render()
     book.render(game.nozoom)
     speechGroup.draw(game.nozoom)
-    pressed = pygame.key.get_pressed()
-    #buttons.draw(game.game)
+    # Pass events through everything
     for event in pygame.event.get():
       if linearSpeech.event(event): continue
       if player.event(event): continue
@@ -99,5 +96,5 @@ def run(npcs, game, loadingScreen, clock, seed, player_appearance=None, isNew=Tr
       text = font.render(str(round(clock.get_fps())), True, (255, 0, 0))
       game.nozoom.blit(text, text.get_rect(topright=(1920,0)))
     if not world.skipRenderFrame:
-      game.render()
+      game.render() # render
     

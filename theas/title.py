@@ -14,6 +14,7 @@ import mono
 
 buttonFont = pygame.font.Font("assets/fonts/Montserrat-ExtraBoldItalic.ttf", 96)
 
+# Button that expands on hover!
 class Button(karas.sprite.Sprite):
   topLeftAligned = True
   def init(self, text ,foreground, background, pos, bg_hover=None, onClick=None, padding = 3, key=None):
@@ -72,6 +73,7 @@ class Button(karas.sprite.Sprite):
           self.onClick()
         return True
 
+# Code to run to make a new game
 def NewGame(loadingScreen, clock, screen):
   savename = theas.text_prompt.prompt_text(screen, "Please enter save name", clock)
   while savename in theas.saver.get_saves():
@@ -92,6 +94,7 @@ def NewGame(loadingScreen, clock, screen):
       theas.game.run(npcs, Game, loadingScreen, clock, 0, player_appearance=player_appearance)
       raise karas.ReloadTitleScreen()
 
+# Code to run to load a game
 def LoadGame(loadingScreen, clock, screen):
   savename = theas.save_chooser.do_choose_screen(screen, clock, loadingScreen)
   if savename:
@@ -109,6 +112,7 @@ def LoadGame(loadingScreen, clock, screen):
 def quitGame():
   raise karas.QuitTriggered()
 
+# Title screen
 def do_title_screen(screen, clock, loadingScreen):
 
   contButton = Button("Continue", (255, 255, 255), (255, 0, 0), (100,100), (255, 128, 128))
@@ -123,9 +127,10 @@ def do_title_screen(screen, clock, loadingScreen):
   ButtonGroup.add(newButton)
   if len(theas.saver.get_saves()) > 0:
     ButtonGroup.add(loadButton)
-  ButtonGroup.add(settingsButton,quitButton)
-  mono.yes_music()
+  ButtonGroup.add(quitButton)
+  mono.yes_music() # yes! music!
   while True:
+    # Time management
     time_passed = clock.tick(30) / 1000
     prev_time = time_in
     time_in += time_passed
@@ -136,7 +141,7 @@ def do_title_screen(screen, clock, loadingScreen):
         if mono.music_event(event): continue
     screen.fill((0,0,0))
     y_pos = 0
-    for sprite in ButtonGroup.sprites():
+    for sprite in ButtonGroup.sprites(): # Move sprites down if one exands
       sprite.update(time_in, y_pos)
       y_pos += sprite.rect.height + 30
     ButtonGroup.draw(screen)

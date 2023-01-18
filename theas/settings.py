@@ -13,7 +13,7 @@ import theas.save_chooser
 import karas
 import random
 import mono
-
+# NOT USED (yet??)
 font = pygame.font.Font("assets/fonts/Montserrat-Regular.ttf", 30)
 def do_settings(screen):
   pass

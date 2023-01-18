@@ -8,17 +8,7 @@ import random
 import constants
 import mono
 
-#em_appearance = engine.character.CharacterCreationValues()
-#em_appearance.eyecolor = engine.character.Color(*engine.character.EYE_COLORS[2])
-#em_appearance.hair = 1
-#em_appearance.haircolor = engine.character.Color(*engine.character.HAIR_COLORS[1])
-#em_appearance.top = 1
-#em_appearance.skincolor = engine.character.Color(*engine.character.SKIN_COLORS[4])
-#em_appearance.topcolor = engine.character.Color(255, 123, 0)
-#em_appearance.legcolor = engine.character.Color(64, 64, 64)
-#em_appearance = str(em_appearance)
-#print(em_appearance)
-
+# Defines an asteroid sprite. Moves in a diagonal at a fixed speed. speeds up later to simulate rocket moving up
 ASTEROID = pygame.image.load("assets/cutscene/asteroid.png").convert_alpha()
 
 class AsteroidSprite(pygame.sprite.Sprite):
@@ -46,6 +36,7 @@ def play_opening_cutscene(loadingScreen, player_appearance, clock):
     for line in f.readlines():
       row = []
       for c in line[:208]:
+        # Read text file code
         if c == " ":
           block = engine.blocks.AIR
         if c == "c":
@@ -66,15 +57,19 @@ def play_opening_cutscene(loadingScreen, player_appearance, clock):
       world.level.append(row)
   clock = pygame.time.Clock()
   time_in = 0
+  # Make easing for all things we want to ease
+  # Starts out specific to show the screen. Maybe a way to make it more detailed in the future?
   zoom = saras.easing.EasingInteger(120)
   cameraPos = saras.easing.Easing2dVector((3,0.1875))
   scroll_x = saras.easing.EasingInteger(0)
   pygame.mixer.music.play()
+  # NPC the player talks to
   em = olivas.cutscenenpc.NPC(world, pos=(30,60), cstring="1113d671dff7b00391d00ffdbac404040")
   player = olivas.cutscenenpc.NPC(world, pos=(27,60), cstring=player_appearance)
   speech = olivas.speech.speech()
   speechGroup = pygame.sprite.GroupSingle(speech)
   npcs = pygame.sprite.Group(em, player)
+  # all thruster variations of the rocket with the player's head stuck inside it.
   rocket = engine.buildings.scale2x(pygame.image.load("assets/cutscene/rocket.png").convert_alpha())
   rocket.blit(player.sprites[0], (56, 30), area=pygame.Rect(12, 6, 16, 22))
   rocket2 = engine.buildings.scale2x(pygame.image.load("assets/cutscene/rocket2.png").convert_alpha())
@@ -84,6 +79,7 @@ def play_opening_cutscene(loadingScreen, player_appearance, clock):
   rocket4 = engine.buildings.scale2x(pygame.image.load("assets/cutscene/rocket4.png").convert_alpha())
   rocket4.blit(player.sprites[0], (56, 30), area=pygame.Rect(12, 6, 16, 22))
   rocketpos = saras.easing.Easing2dVector((0,0))
+  # initialise more stuff
   font = pygame.font.SysFont("Calibri", 30)
   asteroids = pygame.sprite.Group()
   opacity = saras.easing.EasingInteger(0)
@@ -92,11 +88,12 @@ def play_opening_cutscene(loadingScreen, player_appearance, clock):
     font = pygame.font.SysFont("Courier", 30)
   while True:
     frame += 1
+    # time pass counter
     pygame.event.pump()
     time_passed = clock.tick(30) / 1000
     prev_time = time_in
     time_in += time_passed
-
+    # time of rocket launch (in s)
     t = 92
 
     # Events here
@@ -134,11 +131,13 @@ def play_opening_cutscene(loadingScreen, player_appearance, clock):
       cameraPos.ease_to((10, 30), 10)
       zoom.ease_to(3, 10)
     elif prev_time < 118 <= time_in:
-      opacity.ease_to(255, 4)
+      opacity.ease_to(255, 4) # Start fade
     elif prev_time < 126 <= time_in:
-      return
-    if frame % 5 - int(max(1,min(4,(time_in - t)/4))) == 0:
+      return # Exit
+    if frame % (5 - int(max(1,min(4,(time_in - t)/4)))) == 0:
       asteroids.add(AsteroidSprite(world))
+      # Eery 5 frames add an asteroid
+    # Update everything
     em.clock_tick(time_passed)
     player.clock_tick(time_passed)
     speech.clock_tick(time_passed)
@@ -151,7 +150,7 @@ def play_opening_cutscene(loadingScreen, player_appearance, clock):
     scroll_x.update_time(time_in)
     rocketpos.update_time(time_in)
     opacity.update_time(time_in)
-    
+    # set values from easers
     game.zoomamount = zoom()
     cpos = cameraPos()
     game.zoompos = (1920//2 + cpos[0] * 16, 1080//2 - cpos[1] * 16)
@@ -161,6 +160,8 @@ def play_opening_cutscene(loadingScreen, player_appearance, clock):
     npcs.draw(game.zoom)
     pos = rocketpos()
     pos = (pos[0] + 135, pos[1] + 22)
+    # Render
+    # Rocket stuff
     if t -1 <= time_in:
       if time_in % 0.3 > 0.2:
         game.zoom.blit(rocket2, (pos[0] * 16 - world.scrollx, pos[1] * 16 - world.scrolly))
@@ -177,8 +178,6 @@ def play_opening_cutscene(loadingScreen, player_appearance, clock):
     game.zoom.blit(txt, r.topleft)
     game.nozoom.fill((0,0,0,opacity()))
     speechGroup.draw(game.nozoom)
-    #pygame.draw.line(game.nozoom, (0,255,0), (1920//2-8, 1080//2), (1920//2+8, 1080//2), width = 2)
-    #pygame.draw.line(game.nozoom, (0,255,0), (1920//2, 1080//2-8), (1920//2, 1080//2+8), width = 2)
     if constants.SHOW_FPS:
       text = font.render(str(round(clock.get_fps())), True, (255, 0, 0))
       game.nozoom.blit(text, text.get_rect(topright=(1920,0)))

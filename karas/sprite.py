@@ -2,6 +2,7 @@ import pygame
 import karas.utils
 
 class Sprite(pygame.sprite.Sprite):
+  # Base class for sprites
   hover = False
   width = 50
   height = 50
@@ -24,6 +25,7 @@ class Sprite(pygame.sprite.Sprite):
     self.spritenum = 0
   
   def fromSpriteSheet(self, sheet):
+    # Spritesheet to list of images
     if not self.spritesheet:
       self.im = sheet
       return
@@ -34,7 +36,7 @@ class Sprite(pygame.sprite.Sprite):
       sprites.append(sprite)
     self.sprites = sprites
     self.flippedsprites = [pygame.transform.flip(i, True, False) for i in sprites]
-
+  # Set sprite from spritesheet
   def setSprite(self, num, flipped = False):
     if self.spritesheet:
       self.spritenum = num
@@ -42,21 +44,25 @@ class Sprite(pygame.sprite.Sprite):
         self.im = self.sprites[num]
       else:
         self.im = self.flippedsprites[num]
-  def postupdate(self, *args, **kwargs):
-    pass
-  def init(self, *args, **kwargs):
-    pass
+  
+  # Functions children define
+  def postupdate(self, *args, **kwargs): ...
+  def init(self, *args, **kwargs): ...
+  def onupdate(self, *args, **kwargs): ...
   
   def update(self, *args, callupdate=True, **kwargs):
     self.rect = self.im.get_rect()
+    # set rect position
     if self.bottomLeftAligned:
       self.rect.bottomleft = self.pos
     elif self.topLeftAligned:
       self.rect.topleft = self.pos
     else:
       self.rect.center = self.pos
+    # Update child class
     if callupdate:
       self.onupdate(*args, **kwargs)
+    # Get new rect and align
     self.rect = self.im.get_rect()
     if self.bottomLeftAligned:
       self.rect.bottomleft = self.pos
@@ -64,6 +70,7 @@ class Sprite(pygame.sprite.Sprite):
       self.rect.topleft = self.pos
     else:
       self.rect.center = self.pos
+    # set to hover image if needed
     if self.hover:
       if self.rect.collidepoint((pygame.mouse.get_pos()[0] - self.rectoffset[0], pygame.mouse.get_pos()[1] - self.rectoffset[1])):
         self.image = self.hoverim
@@ -72,22 +79,16 @@ class Sprite(pygame.sprite.Sprite):
     else:
       self.image = self.im
     self.postupdate()
-  def onupdate(self):
-    pass
-
-class Group(pygame.sprite.Group):
-  def __init__(self, spriteClass):
-    super().__init__()
-    self.spriteClass = spriteClass
-  def createNew(self, *args, **kwargs):
-    return self.add(self.spriteClass(*args, **kwargs))
 
 class Button(Sprite):
+  # A text button
   hover = True
   bottomLeftAligned = True
   def init(self, text, color, pos=(100, 100), border_radius=5,padding=10, size=40, darker_text=False, darker_hover=False, font=None, text_color=None, onClick=None):
+    # set font
     font = font or pygame.font.SysFont("Ariel", size)
     self.onclick = onClick
+    # Draw unhover button
     if darker_text:
       text_color = text_color or karas.utils.darken_color(*color, factor = 0.5)
     else:
@@ -99,7 +100,7 @@ class Button(Sprite):
     karas.utils.draw_rounded_rect(padded_surface, padded_text, color, border_radius)
     padded_surface.blit(text_surface, (padding, padding))
     self.im = padded_surface
-
+    # Draw hover button
     if darker_hover:
       color = karas.utils.darken_color(*color, factor = 0.3)
     else:
@@ -120,18 +121,10 @@ class Button(Sprite):
     self.pos = pos
   
   def event(self, event):
+    # if clicked call onclick
     if event.type == pygame.MOUSEBUTTONDOWN:
       if event.button == 1:
         if self.rect.collidepoint((event.pos[0] - self.rectoffset[0], event.pos[1] - self.rectoffset[1])):
           if self.onclick:
             self.onclick()
           return True
-
-
-class TransparentButton(Sprite):
-  hover = True
-  def init(self, text, color=(0,0,0), hover_color=(89, 92, 0), pos=(100, 100), size=40):
-    font = pygame.font.SysFont("Ariel", size)
-    self.im = font.render(text, True, color)
-    self.hoverim = font.render(text, True, hover_color)
-    self.pos = pos

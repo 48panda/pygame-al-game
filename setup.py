@@ -18,7 +18,7 @@ json_files = glob("assets/*.json", recursive=True)
 # exclude unneeded packages. If building yourself, add libraries here to reduce file size
 build_exe_options = {"includes": ["pygame"],
                     "excludes":["_distutils_hack", "_pytest", "asyncio", "atomicwrites", "attr", "backcall", "backports", "black", "blib2to3", "bs4", "cairo", "certifi", "cffi", "chardet", "charset_normalizer",
-                    "click", "cloudpickle", "colorama", "concurrent", "cryptography", "ctypes", "curses", "dateutil", "defusedxml", "distutils", "docutils", "email",
+                    "click", "cloudpickle", "colorama", "concurrent", "cryptography", "curses", "dateutil", "defusedxml", "distutils", "docutils", "email",
                     "fonttools", "html", "http", "idna", "inportlib", "importlib_metadata", "ipykernel", "Ipython", "ipython_genutils", "jedi", "jinja2", "jsonschema", "jupyter_client", "jupyter_core",
                     "lib2to3","lib", "lxml", "markupsafe", "matplotlib", "more_itertools", "mpl_toolkits", "mpmath", "multiprocessing", "nbconvert", "nbformat", "notebook", "OpenGL", "OpenGL_accelerate",
                     "packaging", "pandas", "parso", "pathlib2", "pathspec", "pkg_resources", "platrformdirs", "pluggy", "prompt_toolkit", "py", "pycparser", "pydoc_data", "pyglet", "pygments", "PyQt5",

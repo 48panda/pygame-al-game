@@ -11,6 +11,7 @@ def draw_rounded_rect(surface, rect, color, corner_radius):
         raise ValueError(f"Both height (rect.height) and width (rect.width) must be > 2 * corner radius ({corner_radius})")
 
     # need to use anti aliasing circle drawing routines to smooth the corners
+    # Sometimes it's a bit glitchy
 
     draw_circle(surface, rect.left+corner_radius, rect.top+corner_radius, corner_radius, color)
     draw_circle(surface, rect.right-corner_radius-1, rect.top+corner_radius, corner_radius, color)

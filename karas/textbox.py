@@ -12,13 +12,16 @@ class TextInput(karas.sprite.Sprite):
     self.color = color
     self.maxwidth = width
     self.focused = False
-    self.im = pygame.Surface((self.maxwidth, font.render("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", True, color).get_height()))
+    # Get max height
+    maxheight = font.render("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", True, color).get_height()
+    self.im = pygame.Surface((self.maxwidth, maxheight))
     self.im.fill(self.rectColor)
     self.im.blit(font.render(self.text, True, color), (0,0))
     self.cursor = pygame.Surface((5, self.im.get_height()))
     self.cursor.fill(color)
   
   def onupdate(self):
+    # Setup image
     self.im.fill(self.rectColor)
     txt = self.font.render(self.text, True, self.color)
     self.im.blit(txt, (0,0))
@@ -27,6 +30,7 @@ class TextInput(karas.sprite.Sprite):
   
   def event(self, event):
     if event.type == pygame.MOUSEBUTTONDOWN:
+      # toggle focus
       if event.button == 1:
         if pygame.Rect(self.pos[0], self.pos[1], self.maxwidth, self.rect.height).collidepoint(event.pos):
           self.focused = not self.focused
@@ -40,7 +44,9 @@ class TextInput(karas.sprite.Sprite):
         if event.key == pygame.K_BACKSPACE:
           self.text = self.text[:-1]
         if event.unicode in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_- ":
+          # add character
           self.text += event.unicode
           if self.font.render(self.text, True, self.color).get_width() > self.maxwidth:
+            # remove if too long
             self.text = self.text[:-1]
         return True

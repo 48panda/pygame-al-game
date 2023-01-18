@@ -1,8 +1,11 @@
 import pygame
 
 def scale2x(im):
+  """Scales an image by 2 for a more pixelated look
+  """
   return pygame.transform.scale(im, (im.get_width()*2, im.get_height()*2))
 
+# Load textures
 SHIP =scale2x(pygame.image.load("assets/buildings/ship.png").convert_alpha())
 HOUSE0000 = scale2x(pygame.image.load("assets/buildings/fossilhouse.png").convert_alpha())
 HOUSE0450 = scale2x(pygame.image.load("assets/buildings/almostfossilhouse.png").convert_alpha())
