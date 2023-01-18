@@ -46,10 +46,6 @@ https://user-images.githubusercontent.com/58887107/213301649-c11c2ea7-7408-4d27-
 
 - [Some ok music](https://youtu.be/dLLbDeU_KA0)
 
-# Why isn't it finished?
-
-When I got to this stage in the development I realised that the game was trying to be 2 completely different games. Maybe I'll carry on working on it one day.
-
 # File Structure
 most of the code is within a few different modules.
 
