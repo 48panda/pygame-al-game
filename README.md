@@ -18,14 +18,20 @@ To compile, run `setup.py build` in the root of the project. A zip file called `
 # About
 
 It is 2D and features NPCs, quests and time travel. Some of the features it has are:
-- [Mining and breaking blocks](https://youtu.be/kDAm7d7oeAI)
-- [Custom character creation](https://youtu.be/vcDK2qk5vPE)
-- [A cutscene at the beginning of the game (featuring your character!) as well as Quests and Dialogue (very unfinished)](https://youtu.be/1w8Em5kjRDk)
-- [Time travel! Long jumps forward may take a while as it simulates each year for a deterministic behaviour.](https://youtu.be/WNyQ4p1mzkg)
+- Mining and breaking blocks
+https://user-images.githubusercontent.com/58887107/213302515-513f5a25-6be5-417a-a782-2fddbca3c534.mp4
+- Custom character creation
+https://user-images.githubusercontent.com/58887107/213302736-f7e8b8a4-62f7-4141-b086-eb58607d67e3.mp4
+- A cutscene at the beginning of the game (featuring your character!) as well as Quests and Dialogue (very unfinished)
+https://user-images.githubusercontent.com/58887107/213301632-b68dad8a-eff9-46b5-8f00-6295c7e530e8.mp4
+- Time travel! Long jumps forward may take a while as it simulates each year for a deterministic behaviour.
   - Over time, NPCs will be born and die, and as new time periods approach, they'll upgrade their houses.
-- [Really tall trees (too tall?) which actually fall down](https://youtu.be/7ndYUzPLKdw)
-- [Crafting](https://youtu.be/5lBjUgyfUiE)
-- [An inventory system](https://youtu.be/lqNG7SAMdHU)
+- Really tall trees (too tall?) which actually fall down
+https://user-images.githubusercontent.com/58887107/213301644-f09a66da-2370-4583-87e8-090fc2cf3879.mp4
+- Crafting
+https://user-images.githubusercontent.com/58887107/213301645-aeab8f6d-21ba-4d15-b273-6ad9ef832048.mp4
+- An inventory system
+https://user-images.githubusercontent.com/58887107/213301649-c11c2ea7-7408-4d27-9e3a-9788f996c68d.mp4
 - [Some ok music](https://youtu.be/dLLbDeU_KA0)
 
 # Why isn't it finished?
