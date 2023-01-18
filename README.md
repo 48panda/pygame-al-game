@@ -13,7 +13,7 @@ To run the game from it's source, you just need to install pygame and run main.p
 
 # Compiling
 
-To compile, run `setup.py build` in the root of the project. A zip file called `game.zip will be made.`
+To compile, run `setup.py build` in the root of the project. A zip file called `game.zip` will be made.
 
 # About
 
